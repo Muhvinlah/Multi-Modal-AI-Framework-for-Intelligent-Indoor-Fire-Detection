@@ -1,0 +1,44 @@
+# ============================
+# Core Framework
+# ============================
+fastapi
+uvicorn[standard]
+websockets
+jinja2
+python-dotenv
+python-multipart
+
+# ============================
+# Security
+# ============================
+pyjwt
+
+# ============================
+# Data & ML
+# ============================
+numpy
+joblib
+scikit-learn
+xgboost
+
+# ============================
+# Computer Vision (YOLO)
+# ============================
+ultralytics
+opencv-python
+
+# ============================
+# Chatbot (SLM + RAG)
+# ============================
+# llama-cpp-python di-install TERPISAH (lihat README.md)
+# karena memerlukan compile flag khusus per GPU backend
+llama-cpp-python
+chromadb
+sentence-transformers
+pypdf
+
+# ============================
+# Notification & Export
+# ============================
+httpx
+fpdf
