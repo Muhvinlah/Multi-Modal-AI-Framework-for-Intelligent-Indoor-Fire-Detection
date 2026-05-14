@@ -23,6 +23,8 @@
     #view-dashboard.active { display: grid !important; animation: fadeIn 0.3s ease; }
     #view-events.active    { display: block !important; animation: fadeIn 0.3s ease; }
     #view-settings.active  { display: grid !important; animation: fadeIn 0.3s ease; }
+    /* Scrollable view sections on small screens */
+    #view-events.active, #view-settings.active { overflow-y: auto; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
     .chat-chip { cursor: pointer; transition: all 0.2s; }
     .chat-chip:hover { background: #374151; transform: translateY(-1px); }
@@ -64,9 +66,9 @@
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-1 flex flex-col overflow-hidden relative">
+  <main class="flex-1 flex flex-col overflow-y-auto relative">
     <!-- 2. GLOBAL STATUS BAR (Critical) -->
-    <div id="global-status-bar" class="status-bar-aman w-full h-14 flex items-center justify-between px-6 transition-all duration-500">
+    <div id="global-status-bar" class="status-bar-aman sticky top-0 z-10 w-full h-14 flex items-center justify-between px-6 transition-all duration-500">
       <div class="flex items-center gap-4">
         <span id="global-status" class="text-lg font-black tracking-wide">STATUS: AMAN</span>
         <span class="text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400" id="ws-status">TERHUBUNG</span>
@@ -97,9 +99,9 @@
     </div>
 
     <!-- VIEW: DASHBOARD -->
-    <div id="view-dashboard" class="view-section active flex-1 px-6 pb-6 grid grid-cols-12 gap-6 overflow-hidden">
+    <div id="view-dashboard" class="view-section active px-6 pb-6 grid grid-cols-12 gap-6">
       <!-- Camera Panel (Left 8) -->
-      <div class="col-span-8 flex flex-col gap-4 h-full">
+      <div class="col-span-8 flex flex-col gap-4">
         <div class="glass-card p-3 flex-1 flex flex-col relative">
           <div class="flex items-center justify-between mb-2">
             <select id="camera-select" onchange="switchCamera(this.value)" class="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -109,7 +111,7 @@
               <i class="ph ph-camera"></i> Capture
             </button>
           </div>
-          <div class="relative flex-1 bg-black rounded-lg overflow-hidden border border-zinc-800">
+          <div class="relative bg-black rounded-lg overflow-hidden border border-zinc-800" style="min-height: 280px; height: 40vh;">
             <img id="camera-frame" class="w-full h-full object-cover hidden" alt="Live Stream">
             <div id="camera-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-500">
               <i class="ph ph-video-camera text-4xl mb-2"></i>
@@ -150,7 +152,7 @@
       </div>
 
       <!-- Sensor Panel (Right 4) -->
-      <div class="col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
+      <div class="col-span-4 flex flex-col gap-4 pb-6">
         <div class="glass-card p-4">
           <h3 class="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2"><i class="ph ph-thermometer"></i> Lingkungan</h3>
           <div class="grid grid-cols-2 gap-3">
@@ -191,8 +193,8 @@
     </div>
 
     <!-- VIEW: EVENTS -->
-    <div id="view-events" class="view-section px-6 pb-6">
-      <div class="glass-card p-4 h-full flex flex-col">
+    <div id="view-events" class="view-section px-6 pb-6 min-h-0">
+      <div class="glass-card p-4 flex flex-col">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold">Riwayat & Log Insiden</h2>
           <div class="flex gap-2">
