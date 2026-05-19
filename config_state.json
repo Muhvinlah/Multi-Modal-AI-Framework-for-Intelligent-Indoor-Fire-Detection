@@ -1,0 +1,18 @@
+{
+  "cameras": {
+    "cam_01": {
+      "name": "Webcam 0",
+      "rtsp_url": "0",
+      "enabled": true
+    }
+  },
+  "thresholds": {
+    "prob_aman": 30.0,
+    "prob_waspada": 70.0,
+    "yolo_weight_high": 0.6,
+    "yolo_weight_low": 0.3,
+    "yolo_threshold": 50.0,
+    "yolo_interval": 1.0,
+    "sensor_interval": 2.0
+  }
+}

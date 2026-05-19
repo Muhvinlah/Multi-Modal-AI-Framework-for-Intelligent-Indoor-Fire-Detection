@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penilaian Risiko Kebakaran - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: { 850: '#202023', 900: '#18181b', }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center font-sans p-4 relative overflow-hidden">
+    <!-- Backgrond Glow Vector -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orange-600/10 h-96 w-96 rounded-full blur-[100px] pointer-events-none"></div>
+
+    <div class="w-full max-w-md z-10 relative">
+        <div class="bg-zinc-900/80 backdrop-blur-xl rounded-3xl p-8 border border-zinc-800 shadow-2xl">
+            <!-- Icon -->
+            <div class="flex justify-center mb-6">
+                <div class="h-16 w-16 bg-gradient-to-br from-orange-400 to-red-600 rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+                    <svg class="h-8 w-8 text-white -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C7 2 3 6.47 3 12c0 2.27.76 4.37 2.04 6.04L4 19.1V22h2.9l1.06-1.04A9.97 9.97 0 0 0 12 22c5.53 0 10-4.47 10-10S17.53 2 12 2z"></path></svg>
+                </div>
+            </div>
+
+            <!-- Titles -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-black tracking-tight text-white mb-2">Portal Dasbor PBL</h1>
+                <p class="text-sm text-zinc-400">Silakan masukkan identitas keamanan Anda untuk memantau sistem Risiko Kebakaran.</p>
+            </div>
+
+            <!-- Error Notification -->
+            {% if error %}
+            <div class="bg-red-500/10 border border-red-500/50 text-red-500 text-sm font-semibold p-3 rounded-xl mb-6 text-center animate-pulse">
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Form -->
+            <form action="/login" method="POST" class="space-y-5">
+                <div>
+                    <label for="username" class="block text-sm font-semibold text-zinc-300 mb-1.5 ml-1">Username / ID Karyawan</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </div>
+                        <input type="text" id="username" name="username" required autocomplete="username"
+                            class="pl-10 w-full bg-zinc-950/50 border border-zinc-700/80 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" placeholder="Masukkan Username (admin)">
+                    </div>
+                </div>
+
+                <div>
+                     <label for="password" class="block text-sm font-semibold text-zinc-300 mb-1.5 ml-1">Kata Sandi Akses</label>
+                     <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        </div>
+                        <input type="password" id="password" name="password" required
+                            class="pl-10 w-full bg-zinc-950/50 border border-zinc-700/80 rounded-xl px-4 py-3 text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors" placeholder="Masukkan Sandi (admin)">
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] transition-all transform active:scale-[0.98]">
+                        Otorisasi Akses
+                    </button>
+                </div>
+            </form>
+
+            <!-- Footer Teams -->
+             <div class="mt-8 text-center border-t border-zinc-800 pt-6">
+                <p class="text-xs text-zinc-600 font-medium">Tim Pengembang Sistem PBL<br>
+                <span class="text-zinc-500 font-semibold mt-1 inline-block">Ervin &bull; Akmal &bull; Jascon &bull; Farhan</span></p>
+             </div>
+        </div>
+    </div>
+</body>
+</html>

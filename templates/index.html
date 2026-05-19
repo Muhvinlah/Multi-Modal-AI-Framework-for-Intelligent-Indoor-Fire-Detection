@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multi-Modal AI Fire Detection Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root { --bg-dark: #09090b; --panel: #18181b; --border: #27272a; --accent: #6366f1; }
+    body { background-color: var(--bg-dark); color: #e4e4e7; font-family: system-ui, -apple-system, sans-serif; }
+    .glass-card { background: var(--panel); border: 1px solid var(--border); border-radius: 0.75rem; backdrop-filter: blur(8px); }
+    .status-bar-aman { background: rgba(16, 185, 129, 0.15); border-bottom: 2px solid #10b981; }
+    .status-bar-waspada { background: rgba(245, 158, 11, 0.15); border-bottom: 2px solid #f59e0b; }
+    .status-bar-bahaya { background: rgba(239, 68, 68, 0.2); border-bottom: 2px solid #ef4444; animation: pulse-border 2s infinite; }
+    @keyframes pulse-border { 0%,100%{border-color:#ef4444} 50%{border-color:#b91c1c} }
+    /* Force hide all inactive sections regardless of Tailwind utility specificity */
+    .view-section { display: none !important; }
+    /* Restore correct display type per section when active */
+    #view-dashboard.active { display: grid !important; animation: fadeIn 0.3s ease; }
+    #view-events.active    { display: block !important; animation: fadeIn 0.3s ease; }
+    #view-settings.active  { display: grid !important; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .chat-chip { cursor: pointer; transition: all 0.2s; }
+    .chat-chip:hover { background: #374151; transform: translateY(-1px); }
+    .threshold-indicator { height: 4px; border-radius: 2px; margin-top: 4px; }
+  </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+  <!-- 1. LEFT SIDEBAR NAV -->
+  <aside class="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col">
+    <div class="p-6 border-b border-zinc-800">
+      <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+        <i class="ph ph-fire text-red-500"></i> AI Fire Detect
+      </h1>
+      <p class="text-xs text-zinc-500 mt-1">Multi-Modal Framework v2.0</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-1">
+      <button onclick="switchView('dashboard')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-900 text-indigo-400 border border-indigo-500/30 font-medium">
+        <i class="ph ph-squares-four text-lg"></i> Dashboard
+      </button>
+      <button onclick="switchView('events')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 transition">
+        <i class="ph ph-clipboard-text text-lg"></i> Riwayat & Log
+      </button>
+      <button onclick="switchView('settings')" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 transition">
+        <i class="ph ph-gear text-lg"></i> Pengaturan
+      </button>
+    </nav>
+    <div class="p-4 border-t border-zinc-800">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-sm">A</div>
+        <div>
+          <p class="text-sm font-medium">{{ username }}</p>
+          <p class="text-xs text-zinc-500">Operator K3</p>
+        </div>
+      </div>
+      <a href="/logout" class="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 transition">
+        <i class="ph ph-sign-out"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex flex-col overflow-hidden relative">
+    <!-- 2. GLOBAL STATUS BAR (Critical) -->
+    <div id="global-status-bar" class="status-bar-aman w-full h-14 flex items-center justify-between px-6 transition-all duration-500">
+      <div class="flex items-center gap-4">
+        <span id="global-status" class="text-lg font-black tracking-wide">STATUS: AMAN</span>
+        <span class="text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400" id="ws-status">TERHUBUNG</span>
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="ws-dot"></span>
+        <span id="sensor-status" class="text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400 font-bold">SENSOR --</span>
+        <span id="sensor-dot" class="w-2 h-2 rounded-full bg-zinc-500"></span>
+      </div>
+      <div class="flex items-center gap-3 text-sm font-mono text-zinc-400">
+        <span id="current-date" class="text-xs">--</span>
+        <span class="text-zinc-600">|</span>
+        <span id="clock">00:00:00</span>
+      </div>
+    </div>
+
+    <!-- 3. KPI CARDS ROW -->
+    <div class="grid grid-cols-3 gap-4 p-6 pb-2">
+      <div class="glass-card p-4">
+        <p class="text-xs text-zinc-500 uppercase font-semibold">Danger Probability (Fusi)</p>
+        <p id="kpi-prob" class="text-2xl font-black mt-1 text-zinc-200">0%</p>
+      </div>
+      <div class="glass-card p-4">
+        <p class="text-xs text-zinc-500 uppercase font-semibold">Active Cameras</p>
+        <p id="kpi-cams" class="text-2xl font-black mt-1 text-zinc-200">0 Online</p>
+      </div>
+      <div class="glass-card p-4">
+        <p class="text-xs text-zinc-500 uppercase font-semibold">Data Staleness</p>
+        <p id="kpi-update" class="text-2xl font-black mt-1 text-zinc-200">0s ago</p>
+        <p class="text-[10px] text-zinc-600 mt-1">Waktu sejak data terakhir diterima</p>
+      </div>
+    </div>
+
+    <!-- VIEW: DASHBOARD -->
+    <div id="view-dashboard" class="view-section active flex-1 min-h-0 px-6 pb-6 grid grid-cols-12 gap-6 overflow-y-auto">
+      <!-- Camera Panel (Left 8) -->
+      <div class="col-span-8 flex flex-col gap-4 h-full">
+        <div class="glass-card p-3 flex-1 flex flex-col relative">
+          <div class="flex items-center justify-between mb-2">
+            <select id="camera-select" onchange="switchCamera(this.value)" class="bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <option>Pilih Kamera...</option>
+            </select>
+            <button onclick="manualCapture()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition">
+              <i class="ph ph-camera"></i> Capture
+            </button>
+          </div>
+          <div class="relative flex-1 bg-black rounded-lg overflow-hidden border border-zinc-800">
+            <img id="camera-frame" class="w-full h-full object-cover hidden" alt="Live Stream">
+            <div id="camera-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-500">
+              <i class="ph ph-video-camera text-4xl mb-2"></i>
+              <p class="text-sm">MENUNGGU KAMERA</p>
+            </div>
+            <!-- Overlays -->
+            <div class="absolute top-2 left-2 bg-red-600/90 text-white px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+              <span id="camera-label">REC</span>
+              <span id="camera-timestamp">00:00:00</span>
+            </div>
+            <div class="absolute bottom-2 left-2 right-2 flex gap-2">
+              <div class="bg-zinc-900/80 backdrop-blur px-2 py-1 rounded text-xs font-mono border border-zinc-700/50">YOLO: <span id="overlay-yolo" class="text-orange-400">0%</span></div>
+              <div class="bg-zinc-900/80 backdrop-blur px-2 py-1 rounded text-xs font-mono border border-zinc-700/50">Sensor: <span id="overlay-sensor" class="text-blue-400">0%</span></div>
+              <div class="bg-zinc-900/80 backdrop-blur px-2 py-1 rounded text-xs font-mono border border-zinc-700/50">Fusi: <span id="overlay-fusion" class="text-purple-400">0%</span></div>
+            </div>
+          </div>
+          <!-- Thumbnail Strip -->
+          <div id="cam-thumbnails" class="flex gap-2 mt-2 h-16 overflow-x-auto pb-1">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+        <!-- Fused Probability Chart -->
+        <div class="glass-card p-4 h-48">
+          <p class="text-xs text-zinc-500 font-semibold uppercase mb-2">Probabilitas Bahaya — Real-time</p>
+          <canvas id="fusionChart"></canvas>
+        </div>
+        <!-- Events & Captures feed -->
+        <div class="glass-card p-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-zinc-400 uppercase">Events & Captures</p>
+            <button onclick="location.reload()" class="text-[10px] text-zinc-500 hover:text-zinc-300 transition">Refresh</button>
+          </div>
+          <div id="events-feed" class="flex gap-3 overflow-x-auto pb-1" style="min-height:2rem">
+            <p class="text-xs text-zinc-500 italic py-2">Belum ada event.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sensor Panel (Right 4) -->
+      <div class="col-span-4 flex flex-col gap-4 overflow-y-auto pr-1">
+        <div class="glass-card p-4">
+          <h3 class="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2"><i class="ph ph-thermometer"></i> Lingkungan</h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800">
+              <p class="text-xs text-zinc-500">SUHU (DHT22)</p>
+              <p id="sensor-temp" class="text-xl font-mono font-bold mt-1 text-zinc-200">0.0°C</p>
+            </div>
+            <div class="bg-zinc-900/50 p-3 rounded-lg text-center border border-zinc-800">
+              <p class="text-xs text-zinc-500">KELEMBAPAN</p>
+              <p id="sensor-humid" class="text-xl font-mono font-bold mt-1 text-zinc-200">0.0%</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="glass-card p-4">
+          <h3 class="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2"><i class="ph ph-gas-pump"></i> Klasifikasi Gas</h3>
+          <div id="gas-badge-container" class="mb-3"></div>
+          <div class="space-y-2">
+            <div><div class="flex justify-between text-xs text-zinc-400"><span>Clean</span><span id="cls-clean">0%</span></div><div class="h-1.5 bg-zinc-800 rounded mt-1"><div id="bar-clean" class="h-full bg-emerald-500 rounded transition-all" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs text-zinc-400"><span>Smoke</span><span id="cls-smoke">0%</span></div><div class="h-1.5 bg-zinc-800 rounded mt-1"><div id="bar-smoke" class="h-full bg-orange-500 rounded transition-all" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs text-zinc-400"><span>Gasoline</span><span id="cls-gasoline">0%</span></div><div class="h-1.5 bg-zinc-800 rounded mt-1"><div id="bar-gasoline" class="h-full bg-red-500 rounded transition-all" style="width:0%"></div></div></div>
+            <div><div class="flex justify-between text-xs text-zinc-400"><span>Mixture</span><span id="cls-mixture">0%</span></div><div class="h-1.5 bg-zinc-800 rounded mt-1"><div id="bar-mixture" class="h-full bg-yellow-500 rounded transition-all" style="width:0%"></div></div></div>
+          </div>
+        </div>
+
+        <div class="glass-card p-4">
+          <h3 class="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2"><i class="ph ph-cpu"></i> Sensor MQ (PPM)</h3>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-zinc-900/50 p-2 rounded border border-zinc-800">MQ-135: <span id="sensor-mq135" class="font-mono">0</span> <span class="threshold-indicator bg-emerald-500"></span></div>
+            <div class="bg-zinc-900/50 p-2 rounded border border-zinc-800">MQ-2: <span id="sensor-mq2" class="font-mono">0</span> <span class="threshold-indicator bg-emerald-500"></span></div>
+            <div class="bg-zinc-900/50 p-2 rounded border border-zinc-800">MQ-7: <span id="sensor-mq7-detail" class="font-mono">0</span> <span class="threshold-indicator bg-emerald-500"></span></div>
+            <div class="bg-zinc-900/50 p-2 rounded border border-zinc-800">MQ-4: <span id="sensor-mq4" class="font-mono">0</span> <span class="threshold-indicator bg-emerald-500"></span></div>
+            <div class="bg-zinc-900/50 p-2 rounded border border-zinc-800">MQ-5: <span id="sensor-mq5" class="font-mono">0</span> <span class="threshold-indicator bg-emerald-500"></span></div>
+            <div class="bg-zinc-900/50 p-2 rounded border border-zinc-800">MQ-3: <span id="sensor-mq3" class="font-mono">0</span> <span class="threshold-indicator bg-emerald-500"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: EVENTS -->
+    <div id="view-events" class="view-section flex-1 min-h-0 px-6 pb-6">
+      <div class="glass-card p-4 h-full flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold">Riwayat & Log Insiden</h2>
+          <div class="flex gap-2">
+            <input type="search" id="log-search" placeholder="Cari event..." class="bg-zinc-900 border border-zinc-700 rounded px-3 py-1.5 text-sm text-zinc-300 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+            <select id="log-filter" onchange="filterLogs()" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-1.5 text-sm text-zinc-300">
+              <option value="all">Semua Tingkat</option>
+              <option value="Waspada">Waspada</option>
+              <option value="Bahaya">Bahaya</option>
+            </select>
+            <button onclick="downloadPDF()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded text-sm transition flex items-center gap-2">
+              <i class="ph ph-file-pdf"></i> Unduh PDF
+            </button>
+          </div>
+        </div>
+        <div class="overflow-y-auto flex-1 rounded-lg border border-zinc-800">
+          <table class="w-full text-sm">
+            <thead class="bg-zinc-900/80 sticky top-0 text-zinc-400 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left">Waktu</th>
+                <th class="px-4 py-3 text-left">Tingkat</th>
+                <th class="px-4 py-3 text-left">Deskripsi</th>
+                <th class="px-4 py-3 text-center">Kamera</th>
+                <th class="px-4 py-3 text-center">Sensor</th>
+                <th class="px-4 py-3 text-center">Fusi</th>
+              </tr>
+            </thead>
+            <tbody id="log-table-body" class="divide-y divide-zinc-800">
+              <tr id="no-log-row"><td colspan="6" class="px-4 py-8 text-center text-zinc-500">Belum ada event. Capture otomatis saat anomali terdeteksi.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- VIEW: SETTINGS -->
+    <div id="view-settings" class="view-section flex-1 min-h-0 px-6 pb-6 grid grid-cols-2 gap-6 overflow-y-auto">
+      <div class="glass-card p-6">
+        <h2 class="text-lg font-bold mb-4">Manajemen Kamera RTSP/ONVIF</h2>
+        <!-- Webcam shortcut — di luar form agar tidak terganggu validasi -->
+        <div class="mb-4 p-3 bg-zinc-950 rounded-lg border border-zinc-800">
+          <p class="text-xs text-zinc-400 font-semibold mb-2">Shortcut Webcam Laptop</p>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="fillWebcam(0)" class="cursor-pointer px-3 py-1.5 text-xs bg-zinc-800 hover:bg-indigo-600 border border-zinc-600 hover:border-indigo-500 rounded text-zinc-200 transition font-medium">Webcam 0 (default)</button>
+            <button onclick="fillWebcam(1)" class="cursor-pointer px-3 py-1.5 text-xs bg-zinc-800 hover:bg-indigo-600 border border-zinc-600 hover:border-indigo-500 rounded text-zinc-200 transition font-medium">Webcam 1</button>
+            <button onclick="fillWebcam(2)" class="cursor-pointer px-3 py-1.5 text-xs bg-zinc-800 hover:bg-indigo-600 border border-zinc-600 hover:border-indigo-500 rounded text-zinc-200 transition font-medium">Webcam 2</button>
+          </div>
+          <p class="text-[10px] text-zinc-600 mt-2">Klik untuk isi form otomatis, lalu klik Tambah Kamera.</p>
+        </div>
+        <form onsubmit="addCamera(event)" class="grid grid-cols-2 gap-3 mb-4">
+          <input id="new-cam-id" placeholder="ID Kamera (mis. cam_01)" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm" required>
+          <input id="new-cam-name" placeholder="Nama Kamera" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm" required>
+          <input id="new-cam-url" placeholder="URL RTSP/ONVIF — atau 0 / 1 / 2 untuk webcam" class="bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm col-span-2" required>
+          <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-sm font-medium col-span-2">Tambah Kamera</button>
+        </form>
+        <div id="camera-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+      </div>
+      <div class="glass-card p-6">
+        <h2 class="text-lg font-bold mb-4">Threshold & Bobot AI</h2>
+        <form onsubmit="saveThresholds(event)" class="space-y-4">
+          <div><label class="text-xs text-zinc-400">Batas Aman (%)</label><input id="th-prob-aman" type="number" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 mt-1"></div>
+          <div><label class="text-xs text-zinc-400">Batas Waspada (%)</label><input id="th-prob-waspada" type="number" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 mt-1"></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-xs text-zinc-400">YOLO Threshold</label><input id="th-yolo-threshold" type="number" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 mt-1"></div>
+            <div><label class="text-xs text-zinc-400">YOLO Weight High</label><input id="th-yolo-weight-high" type="number" step="0.1" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 mt-1"></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-xs text-zinc-400">YOLO Weight Low</label><input id="th-yolo-weight-low" type="number" step="0.1" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 mt-1"></div>
+            <div><label class="text-xs text-zinc-400">Interval (detik)</label><input id="th-yolo-interval" type="number" class="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 mt-1"></div>
+          </div>
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded text-sm font-medium mt-2">Simpan Threshold</button>
+          <p id="threshold-status" class="hidden text-xs text-emerald-400 mt-1 text-center">Tersimpan!</p>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ FLOATING CHATBOT (v2 - fixed sizing) ============ -->
+<button id="chat-fab" onclick="toggleChat()"
+        class="fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center shadow-xl hover:bg-indigo-500 transition z-40">
+  <i class="ph ph-chat-circle-text text-2xl text-white"></i>
+</button>
+
+<div id="chat-window"
+     class="hidden fixed bottom-6 right-6 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl flex flex-col overflow-hidden z-50"
+     style="width: 420px; height: 600px; max-height: calc(100vh - 48px); max-width: calc(100vw - 48px);">
+
+  <!-- Header -->
+  <div class="bg-zinc-950 p-4 border-b border-zinc-800 flex justify-between items-center flex-shrink-0">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center">
+        <i class="ph ph-robot text-indigo-400"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-sm text-white">AI Asisten K3</h3>
+        <p class="text-[10px] text-zinc-500">Sensor-aware • LSTM • RAG</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-1">
+      <button onclick="clearChat()" class="w-8 h-8 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition" title="Reset chat">
+        <i class="ph ph-trash text-base"></i>
+      </button>
+      <button onclick="toggleChatExpand()" id="chat-expand-btn"
+              class="w-8 h-8 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition" title="Perbesar">
+        <i class="ph ph-arrows-out text-base"></i>
+      </button>
+      <button onclick="toggleChat()" class="w-8 h-8 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition" title="Tutup">
+        <i class="ph ph-x text-base"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages area (FLEX-1, ini yang ngembang) -->
+  <div id="chat-messages" class="flex-1 min-h-0 p-4 space-y-3 overflow-y-auto bg-zinc-900/50"></div>
+
+  <!-- Footer: chips + input -->
+  <div class="p-3 bg-zinc-950 border-t border-zinc-800 flex-shrink-0">
+    <div id="chat-chips" class="flex gap-2 overflow-x-auto mb-2 pb-1">
+      <span class="chat-chip px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-300 whitespace-nowrap" onclick="sendQuickChat('Cara pakai APAR?')">Cara pakai APAR?</span>
+      <span class="chat-chip px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-300 whitespace-nowrap" onclick="sendQuickChat('Prosedur evakuasi?')">Prosedur evakuasi?</span>
+      <span class="chat-chip px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-300 whitespace-nowrap" onclick="sendQuickChat('Status ruangan saat ini?')">Status ruangan?</span>
+      <span class="chat-chip px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-300 whitespace-nowrap" onclick="sendQuickChat('Kelas kebakaran ada apa aja?')">Kelas kebakaran?</span>
+    </div>
+    <div class="flex gap-2">
+      <input id="chat-input" type="text" placeholder="Ketik pertanyaan..."
+             class="flex-1 bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500"
+             onkeydown="handleChatEnter(event)" autocomplete="off">
+      <button onclick="sendChatMessage()" id="chat-send-btn"
+              class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded text-sm text-white flex items-center gap-1 transition">
+        <i class="ph ph-paper-plane-right"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+  <!-- Disconnect Modal -->
+  <div id="disconnect-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm items-center justify-center z-50">
+    <div class="glass-card p-6 text-center max-w-md border border-red-500/30">
+      <i class="ph ph-warning-circle text-4xl text-red-500 mb-3"></i>
+      <h2 class="text-xl font-bold text-white mb-2">KONEKSI TERPUTUS!</h2>
+      <p class="text-zinc-400 text-sm mb-4">Sistem gagal menerima data selama 10 detik.</p>
+      <button onclick="location.reload()" class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded text-sm font-medium">Sambung Ulang</button>
+    </div>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

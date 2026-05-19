@@ -1,0 +1,182 @@
+[
+  {
+    "id": "q001",
+    "question": "Apa fungsi sensor MQ-7?",
+    "expected_keywords": ["karbon monoksida", "CO"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q002",
+    "question": "Gimana cara pakai APAR?",
+    "expected_keywords": ["PASS", "Pull", "Aim", "Squeeze", "Sweep"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q003",
+    "question": "Apa arti LSTM anomaly score 1?",
+    "expected_keywords": ["normalize", "0", "1", "pattern", "menyimpang"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q004",
+    "question": "Prosedur evakuasi gimana?",
+    "expected_keywords": ["assembly point", "jalur evakuasi", "lift", "tangga"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q005",
+    "question": "P3K luka bakar gimana?",
+    "expected_keywords": ["air", "kasa", "15", "20", "menit"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q006",
+    "question": "Apa beda status aman, waspada, bahaya?",
+    "expected_keywords": ["probabilitas", "30", "70", "fusi"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q007",
+    "question": "Sensor MQ-2 untuk apa?",
+    "expected_keywords": ["gas", "mudah terbakar", "asap", "LPG"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q008",
+    "question": "Apa kelas kebakaran A?",
+    "expected_keywords": ["padat", "kayu", "kertas", "air"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q009",
+    "question": "Kebakaran listrik pakai apa?",
+    "expected_keywords": ["CO2", "powder", "kelas C", "jangan air"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q010",
+    "question": "ESP32 captive portal itu apa?",
+    "expected_keywords": ["WiFi", "access point", "konfigurasi", "NVS"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q011",
+    "question": "Siapa developer sistem ini?",
+    "expected_keywords": ["Ervin", "Akmal", "Jascon", "Farhan"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q012",
+    "question": "Berapa threshold suhu bahaya?",
+    "expected_keywords": ["45", "warning", "35"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q013",
+    "question": "Apa fungsi sensor MQ-3?",
+    "expected_keywords": ["alkohol", "etanol"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q014",
+    "question": "Sensor MQ-4 mendeteksi gas apa?",
+    "expected_keywords": ["metana", "CH4", "gas alam"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q015",
+    "question": "Apa fungsi sensor MQ-5?",
+    "expected_keywords": ["LPG", "gas alam"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q016",
+    "question": "Sensor MQ-135 untuk mendeteksi apa?",
+    "expected_keywords": ["kualitas udara", "CO2", "asap"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q017",
+    "question": "Bagaimana cara melakukan CPR dasar?",
+    "expected_keywords": ["kompresi", "dada", "30", "2", "napas"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q018",
+    "question": "Pertolongan pertama korban terpapar asap gimana?",
+    "expected_keywords": ["udara segar", "longgarkan", "CPR", "118"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q019",
+    "question": "Apa saja kelas kebakaran dari A sampai D?",
+    "expected_keywords": ["padat", "cair", "listrik", "logam"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q020",
+    "question": "Kenapa ada 6 sensor MQ yang berbeda?",
+    "expected_keywords": ["MQ-2", "MQ-7", "MQ-135", "coverage"],
+    "category": "sensor_knowledge"
+  },
+  {
+    "id": "q021",
+    "question": "Apa itu decision fusion di sistem ini?",
+    "expected_keywords": ["YOLO", "XGBoost", "probabilitas", "gabung"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q022",
+    "question": "Kenapa LSTM bisa false positive?",
+    "expected_keywords": ["normal", "disconnect", "0", "verifikasi"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q023",
+    "question": "Apa itu YOLOv11 dalam sistem deteksi kebakaran ini?",
+    "expected_keywords": ["computer vision", "api", "asap", "CCTV"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q024",
+    "question": "Apa yang harus dilakukan kalau dapat notifikasi Telegram bahaya?",
+    "expected_keywords": ["verifikasi", "dashboard", "APAR", "evakuasi"],
+    "category": "k3_procedure"
+  },
+  {
+    "id": "q025",
+    "question": "Gimana cara menambah kamera baru di dashboard?",
+    "expected_keywords": ["RTSP", "ID", "tambah kamera", "restart"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q026",
+    "question": "Seberapa sering ESP32 mengirim data sensor ke server?",
+    "expected_keywords": ["2 detik", "POST", "rate limiting"],
+    "category": "system_knowledge"
+  },
+  {
+    "id": "q027",
+    "question": "kalau kelembapan",
+    "expected_keywords": ["kelembapan", "perjelas", "spesifik"],
+    "category": "ambiguous_guard"
+  },
+  {
+    "id": "q028",
+    "question": "trus",
+    "expected_keywords": ["spesifik", "lengkapi"],
+    "category": "ambiguous_guard"
+  },
+  {
+    "id": "q029",
+    "question": "Jelaskan langkah lengkap dari deteksi api oleh YOLO sampai notifikasi Telegram terkirim",
+    "expected_keywords": ["YOLO", "fusion", "bahaya", "Telegram"],
+    "category": "multi_step"
+  },
+  {
+    "id": "q030",
+    "question": "Kalau MQ-7 tinggi tapi sensor lain normal, apa yang harus dilakukan dan kenapa berbahaya?",
+    "expected_keywords": ["karbon monoksida", "CO", "berbahaya", "verifikasi"],
+    "category": "multi_step"
+  }
+]

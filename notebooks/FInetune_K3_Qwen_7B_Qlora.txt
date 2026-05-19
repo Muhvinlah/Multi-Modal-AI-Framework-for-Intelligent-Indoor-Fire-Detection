@@ -1,0 +1,238 @@
+# ==============================================================================
+# KAGGLE NOTEBOOK: Fine-tune Qwen 2.5 7B Instruct untuk K3 via QLoRA + Unsloth
+# 
+# Setup:
+# 1. Kaggle Notebook → New → Pilih GPU T4 x2 (Accelerator → GPU T4 x2)
+# 2. Upload dataset Kaggle (k3_qwen7b_train.jsonl + k3_qwen7b_val.jsonl)
+# 3. Set Internet ON di settings notebook (perlu untuk download model)
+# 4. Run cells sequential
+# 
+# Estimated time: ~2-4 jam untuk 3 epoch
+# Output: qwen2.5-7b-k3-q4_k_m.gguf (~4.5GB)
+# ==============================================================================
+import os
+
+for root, dirs, files in os.walk('/kaggle/input'):
+    print(root, files[:5])
+# ============== CELL 2: Imports & Config ==============
+
+import os
+import json
+import torch
+
+from datasets import load_dataset
+from unsloth import FastLanguageModel, is_bfloat16_supported
+from trl import SFTTrainer
+from transformers import TrainingArguments
+
+# =========================
+# Dataset Paths
+# =========================
+TRAIN_FILE = "/kaggle/input/datasets/jasconkembuan/k3-dataset/k3_qwen7b_train.jsonl"
+VAL_FILE = "/kaggle/input/datasets/jasconkembuan/k3-dataset/k3_qwen7b_val.jsonl"
+
+# =========================
+# Output
+# =========================
+OUTPUT_DIR = "/kaggle/working/k3_qwen7b_lora"
+
+# =========================
+# Model Config
+# =========================
+MAX_SEQ_LENGTH = 2048
+
+# Stable Unsloth Qwen model
+MODEL_NAME = "unsloth/Qwen2.5-7B-Instruct-bnb-4bit"
+
+# =========================
+# Check Dataset Exists
+# =========================
+print("Train exists:", os.path.exists(TRAIN_FILE))
+print("Val exists:", os.path.exists(VAL_FILE))
+
+# =========================
+# GPU Info
+# =========================
+if torch.cuda.is_available():
+    gpu_stats = torch.cuda.get_device_properties(0)
+
+    total_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 2)
+
+    print(f"GPU: {gpu_stats.name}")
+    print(f"VRAM: {total_memory} GB")
+else:
+    print("CUDA not available!")
+# ============== CELL 3: Load Model ==============
+model, tokenizer = FastLanguageModel.from_pretrained(
+    model_name=MODEL_NAME,
+    max_seq_length=MAX_SEQ_LENGTH,
+    dtype=None,                    # Auto-detect (bfloat16 on T4)
+    load_in_4bit=True,
+)
+# ============== CELL 4: Setup LoRA Adapter ==============
+model = FastLanguageModel.get_peft_model(
+    model,
+    r=32,                          # LoRA rank. 32 sweet spot untuk 7B
+    target_modules=[
+        "q_proj", "k_proj", "v_proj", "o_proj",
+        "gate_proj", "up_proj", "down_proj",
+    ],
+    lora_alpha=64,                 # Alpha = 2x rank (best practice)
+    lora_dropout=0,                # 0 = best, sebenarnya
+    bias="none",
+    use_gradient_checkpointing="unsloth",
+    random_state=3407,
+    use_rslora=False,
+    loftq_config=None,
+)
+# ============== CELL 5: Load & Format Dataset ==============
+from datasets import load_dataset
+
+# Path dataset
+TRAIN_FILE = "/kaggle/input/datasets/jasconkembuan/k3-dataset/k3_qwen7b_train.jsonl"
+VAL_FILE = "/kaggle/input/datasets/jasconkembuan/k3-dataset/k3_qwen7b_val.jsonl"
+
+# Format chat template
+def format_chat(example):
+    messages = example["messages"]
+
+    text = tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=False
+    )
+
+    return {"text": text}
+
+# Load dataset
+train_ds = load_dataset(
+    "json",
+    data_files=TRAIN_FILE,
+    split="train"
+)
+
+val_ds = load_dataset(
+    "json",
+    data_files=VAL_FILE,
+    split="train"
+)
+
+# Apply formatting
+train_ds = train_ds.map(
+    format_chat,
+    remove_columns=train_ds.column_names
+)
+
+val_ds = val_ds.map(
+    format_chat,
+    remove_columns=val_ds.column_names
+)
+
+# Preview
+print(f"Train: {len(train_ds)} samples")
+print(f"Val:   {len(val_ds)} samples")
+
+print("\n📝 Sample formatted:")
+print(train_ds[0]["text"][:500])
+# ============== CELL 6: Training Config ==============
+training_args = TrainingArguments(
+    output_dir=OUTPUT_DIR,
+    per_device_train_batch_size=4,         # Adjust based on VRAM
+    gradient_accumulation_steps=4,         # Effective batch = 16
+    warmup_steps=20,
+    num_train_epochs=3,                    # 3 epochs untuk dataset 2k-5k
+    learning_rate=2e-4,                    # Standard QLoRA LR
+    fp16=not is_bfloat16_supported(),
+    bf16=is_bfloat16_supported(),
+    logging_steps=10,
+    optim="adamw_8bit",
+    weight_decay=0.01,
+    lr_scheduler_type="linear",
+    seed=3407,
+    save_strategy="epoch",
+    eval_strategy="epoch",
+    save_total_limit=2,
+    load_best_model_at_end=True,
+    metric_for_best_model="eval_loss",
+    report_to="none",
+)
+
+trainer = SFTTrainer(
+    model=model,
+    tokenizer=tokenizer,
+    train_dataset=train_ds,
+    eval_dataset=val_ds,
+    dataset_text_field="text",
+    max_seq_length=MAX_SEQ_LENGTH,
+    dataset_num_proc=2,
+    packing=False,
+    args=training_args,
+)
+# ============== CELL 7: Check GPU & Start Training ==============
+gpu_stats = torch.cuda.get_device_properties(0)
+start_gpu_memory = round(torch.cuda.max_memory_reserved() / 1024 / 1024 / 1024, 3)
+max_memory = round(gpu_stats.total_memory / 1024 / 1024 / 1024, 3)
+print(f"GPU: {gpu_stats.name}, Max memory: {max_memory} GB")
+print(f"Reserved at start: {start_gpu_memory} GB")
+
+trainer_stats = trainer.train()
+# ============== CELL 8: Save LoRA Adapter ==============
+model.save_pretrained(f"{OUTPUT_DIR}/final_adapter")
+tokenizer.save_pretrained(f"{OUTPUT_DIR}/final_adapter")
+print(f"✅ LoRA adapter saved to {OUTPUT_DIR}/final_adapter")
+# ============== CELL 9: Quick Inference Test ==============
+FastLanguageModel.for_inference(model)
+
+test_questions = [
+    "Gimana cara pakai APAR yang benar?",
+    "Klasifikasi kebakaran kelas B itu apa?",
+    "Score LSTM 1 artinya apa?",
+    "Kalau ada notif bahaya di Telegram harus apa?",
+    "Sensor MQ-7 itu untuk apa?",
+]
+
+for q in test_questions:
+    messages = [
+        {"role": "system", "content": "Kamu adalah Asisten K3 untuk sistem deteksi kebakaran IoT. Jawab ringkas, faktual, Bahasa Indonesia baku. Maksimal 3 kalimat kecuali user minta lebih panjang."},
+        {"role": "user", "content": q},
+    ]
+    inputs = tokenizer.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=True, return_tensors="pt"
+    ).to("cuda")
+    
+    outputs = model.generate(
+        input_ids=inputs,
+        max_new_tokens=200,
+        use_cache=True,
+        temperature=0.3,
+        top_p=0.9,
+        do_sample=True,
+    )
+    response = tokenizer.decode(outputs[0][inputs.shape[1]:], skip_special_tokens=True)
+    print(f"\n❓ Q: {q}")
+    print(f"💬 A: {response.strip()}")
+# ============== CELL 10: Merge & Save as GGUF ==============
+# This converts the LoRA adapter into a single GGUF file for llama-cpp
+# Q4_K_M = good balance of size and quality, ~4.5GB
+
+model.save_pretrained_gguf(
+    "/kaggle/working/k3_qwen7b_gguf",
+    tokenizer,
+    quantization_method="q4_k_m",   # Bisa juga "q5_k_m" untuk quality lebih bagus tapi lebih gede
+)
+print("✅ GGUF saved to /kaggle/working/k3_qwen7b_gguf/")
+print("   Download file *.gguf untuk deploy di RTX 3060 lo")
+# ============== CELL 11: Download Helper ==============
+import os
+gguf_files = []
+for root, dirs, files in os.walk("/kaggle/working/k3_qwen7b_gguf"):
+    for f in files:
+        if f.endswith(".gguf"):
+            full = os.path.join(root, f)
+            size_mb = os.path.getsize(full) / (1024 * 1024)
+            gguf_files.append((full, size_mb))
+
+print("GGUF files ready to download:")
+for fp, size in gguf_files:
+    print(f"  {fp} ({size:.1f} MB)")
+print("\n💡 Tip: Pakai 'Output' tab di Kaggle untuk download via browser, atau kompres dulu kalau > 5GB.")

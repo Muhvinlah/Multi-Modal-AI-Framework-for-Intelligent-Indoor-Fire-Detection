@@ -1,0 +1,58 @@
+# ===== Secrets =====
+.env
+.env.local
+
+# ===== Virtual environments (BESAR — jangan pernah di-commit) =====
+venv/
+.venv/
+env/
+ENV/
+
+# ===== Python cache =====
+__pycache__/
+app/__pycache__
+*.pyc
+*.pyd
+*.dll
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ===== Model artifacts (besar — download/training terpisah) =====
+*.gguf
+*.pt
+*.pth
+*.keras
+*.h5
+*.onnx
+models/*.pkl
+models/bm25_index.pkl
+models/train_yolo/dataset/
+models/train_chatbot/dataset_100k.jsonl
+models/train_chatbot2/
+
+# ===== Dataset besar (regenerable / download terpisah) =====
+dataset.jsonl
+dataset_*.jsonl
+*.jsonl.gz
+data/*.jsonl
+!data/corrections.jsonl
+
+# ===== Runtime-generated =====
+chroma_db_native/
+knowledge_base/
+static/captures/
+data/feedback.db
+data/feedback.db-journal
+data/feedback.db-wal
+data/feedback.db-shm
+eval/results/
+
+# ===== Docs internal =====
+SYSTEM_MAP.md
+
+# ===== OS / IDE =====
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

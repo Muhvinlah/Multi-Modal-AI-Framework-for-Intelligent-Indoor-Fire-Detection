@@ -1,0 +1,18 @@
+{
+  "approach": "autoencoder_raw",
+  "threshold_mse_raw": 1.1019468307495117,
+  "scale_k": 4.537424003115602,
+  "window_size": 30,
+  "features": [
+    "mq135",
+    "mq2",
+    "mq3",
+    "mq4",
+    "mq5",
+    "mq7",
+    "temperature",
+    "humidity"
+  ],
+  "anomaly_threshold_normalized": 0.5,
+  "note": "app/lstm_anomaly.py hitung MSE + sigmoid normalization manual via NumPy"
+}
