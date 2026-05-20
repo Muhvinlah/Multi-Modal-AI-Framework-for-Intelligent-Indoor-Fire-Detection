@@ -16,7 +16,8 @@ pyjwt
 # ============================
 # Data & ML
 # ============================
-numpy
+# numpy WAJIB <2.0 — TensorFlow 2.16 belum support numpy 2.x (ABI break)
+numpy==1.26.4
 joblib
 scikit-learn
 xgboost
@@ -25,19 +26,21 @@ xgboost
 # Computer Vision (YOLO)
 # ============================
 ultralytics
-opencv-python
+# opencv-python 4.11+ WAJIB numpy>=2 (bentrok TF). 4.10.0.84 = terakhir
+# yang masih boleh numpy 1.x. JANGAN naikkan tanpa cek numpy.
+opencv-python==4.10.0.84
 
 # ============================
 # Chatbot (SLM + RAG)
 # ============================
 # llama-cpp-python di-install TERPISAH (lihat README.md)
 # karena memerlukan compile flag khusus per GPU backend
-llama-cpp-python
+# llama-cpp-python
 chromadb
 sentence-transformers
 pypdf
-rank_bm25>=0.2.2
-nltk>=3.8.1
+rank_bm25
+nltk
 
 # ============================
 # Notification & Export
@@ -45,16 +48,23 @@ nltk>=3.8.1
 httpx
 fpdf
 
+# ============================
 # LSTM
-tensorflow-cpu==2.15.1
-protobuf>=4.25.3,<4.26
+# ============================
+# Windows: pakai paket "tensorflow" (bukan "tensorflow-cpu" — tidak ada
+# wheel Windows-nya). 2.16.2 = versi teruji, butuh Python 3.9-3.12.
+tensorflow==2.16.2
+# protobuf WAJIB <5.0 untuk TF 2.16; 4.25.8 juga memenuhi google-api-core
+protobuf==4.25.8
 
 # PDF Ingestion (script-only, bukan runtime)
 langchain-community
 langchain-text-splitters
 
-pdfplumber>=0.10.0
-anthropic>=0.40.0
-tiktoken>=0.7.0
+pdfplumber
+anthropic
+tiktoken
 
-google-generativeai>=0.8.0
+google-generativeai
+
+bcrypt>=4.0.0

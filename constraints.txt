@@ -1,0 +1,7 @@
+# Pin versi yang TIDAK BOLEH digeser pip saat install apa pun.
+# Pakai dengan: pip install <apa-saja> -c constraints.txt
+# Alasan: TensorFlow 2.16 wajib numpy<2 & protobuf<5; opencv 4.11+ &
+# llama-cpp-python sering menarik numpy 2.x → bikin TF rusak.
+numpy==1.26.4
+opencv-python==4.10.0.84
+protobuf==4.25.8

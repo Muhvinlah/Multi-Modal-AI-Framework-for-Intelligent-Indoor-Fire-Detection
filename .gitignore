@@ -7,6 +7,7 @@ venv/
 .venv/
 env/
 ENV/
+.env.production
 
 # ===== Python cache =====
 __pycache__/
@@ -56,3 +57,5 @@ SYSTEM_MAP.md
 Thumbs.db
 .idea/
 *.swp
+
+

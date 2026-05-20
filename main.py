@@ -73,6 +73,35 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# === Production Middleware ===
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from app.security import SecurityHeadersMiddleware
+
+_ENV = os.getenv("ENVIRONMENT", "development").lower()
+_ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    if h.strip()
+]
+
+if _ENV == "production":
+    # 1. Reject request dengan Host header asing
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=_ALLOWED_HOSTS)
+
+    # 2. Security headers
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # 3. CORS — restrict ke domain sendiri
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[f"https://{h}" for h in _ALLOWED_HOSTS if "." in h],
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["*"],
+    )
+    print(f"[Startup] Production mode aktif. Allowed hosts: {_ALLOWED_HOSTS}")
+
 # --- Static Files ---
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

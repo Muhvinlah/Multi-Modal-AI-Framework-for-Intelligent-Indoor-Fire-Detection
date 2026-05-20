@@ -20,6 +20,8 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
 #include <DHT.h>
 
 // ===========================

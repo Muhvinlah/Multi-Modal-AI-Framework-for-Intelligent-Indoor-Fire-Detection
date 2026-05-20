@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 # Adjust path sesuai project lo
-MODEL_PATH = os.getenv("CHATBOT_MODEL_PATH", "models/Qwen2.5-7B-K3-q4_k_m.gguf")
+MODEL_PATH = os.getenv("CHATBOT_MODEL_PATH", "models/qwen2.5-3b-k3-q4_k_m.gguf")
 N_GPU_LAYERS = int(os.getenv("CHATBOT_N_GPU_LAYERS", "-1"))   # -1 = all layers to GPU
 N_CTX = int(os.getenv("CHATBOT_N_CTX", "4096"))
 

@@ -12,7 +12,8 @@ import json
 import threading
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+_env_file = ".env.production" if os.getenv("ENVIRONMENT") == "production" else ".env"
+load_dotenv(_env_file, override=True)
 
 # --- Keamanan & JWT ---
 SECRET_KEY = os.getenv("SECRET_KEY", "pbl-sem-6-rahasia-banget")

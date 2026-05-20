@@ -1,11 +1,13 @@
 # ==============================================================================
-# Tujuan       : Autentikasi user (login, logout, JWT token)
+# Tujuan       : Autentikasi user (login, logout, JWT token) — PRODUCTION VERSION
+#                Hardened untuk deployment via Cloudflare Tunnel
 # Caller       : main.py (router include)
-# Dependensi   : app.config (SECRET_KEY, ALGORITHM)
+# Dependensi   : app.config (SECRET_KEY, ALGORITHM), app.security
 # Main Functions: create_access_token(), get_current_user_from_cookie()
-# Side Effects : Set/delete cookie
+# Side Effects : Set/delete cookie (secure, httponly, samesite=lax)
 # ==============================================================================
 
+import os
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -13,9 +15,16 @@ from datetime import datetime, timedelta, timezone
 import jwt
 
 from app.config import SECRET_KEY, ALGORITHM
+from app.security import authenticate
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+
+# Cookie security flags — production HTTPS
+_IS_PRODUCTION = os.getenv("ENVIRONMENT", "development").lower() == "production"
+COOKIE_SECURE = _IS_PRODUCTION   # Only send over HTTPS in production
+COOKIE_SAMESITE = "lax"          # CSRF protection
+COOKIE_MAX_AGE = 7200             # 2 jam, match JWT expiry
 
 
 def create_access_token(data: dict) -> str:
@@ -63,13 +72,23 @@ async def get_login_page(request: Request):
 @router.post("/login")
 async def login_process(request: Request):
     form = await request.form()
-    if form.get("username") == "admin" and form.get("password") == "admin":
-        access_token = create_access_token(data={"sub": "admin"})
+    username = (form.get("username") or "").strip()
+    password = form.get("password") or ""
+
+    if authenticate(username, password):
+        access_token = create_access_token(data={"sub": username})
         response = RedirectResponse(url="/", status_code=302)
         response.set_cookie(
-            key="access_token", value=f"Bearer {access_token}", httponly=True
+            key="access_token",
+            value=f"Bearer {access_token}",
+            httponly=True,                    # JS gak bisa baca
+            secure=COOKIE_SECURE,             # HTTPS-only di production
+            samesite=COOKIE_SAMESITE,         # CSRF protection
+            max_age=COOKIE_MAX_AGE,
+            path="/",
         )
         return response
+
     return templates.TemplateResponse(
         request=request, name="login.html",
         context={"request": request, "error": "Invalid credentials."}
@@ -79,5 +98,10 @@ async def login_process(request: Request):
 @router.get("/logout")
 async def logout():
     response = RedirectResponse(url="/login", status_code=302)
-    response.delete_cookie("access_token")
+    response.delete_cookie(
+        "access_token",
+        path="/",
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+    )
     return response
