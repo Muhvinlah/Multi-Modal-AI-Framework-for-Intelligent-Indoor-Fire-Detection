@@ -57,5 +57,5 @@ SYSTEM_MAP.md
 Thumbs.db
 .idea/
 *.swp
-
+.conda_pkgs
 
