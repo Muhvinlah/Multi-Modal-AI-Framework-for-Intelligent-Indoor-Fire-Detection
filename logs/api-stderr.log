@@ -51184,3 +51184,1295 @@ ERROR:    Traceback (most recent call last):
 UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
 
 ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [48260]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [46760]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [41328]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [24188]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [51940]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [49944]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [18520]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [49460]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [47636]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [39224]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [48076]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [50904]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [47248]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [51868]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [47396]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [47628]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [32548]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [48616]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [34832]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [47124]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [45896]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [26360]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [23844]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [15452]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [49624]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [38380]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [50216]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [2412]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [38460]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [15028]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [46152]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [51264]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [51936]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.
+INFO:     Started server process [46904]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\starlette\routing.py", line 638, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\venv\lib\site-packages\fastapi\routing.py", line 216, in merged_lifespan
+    async with original_context(app) as maybe_original_state:
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran\main.py", line 35, in lifespan
+    print("\U0001f525 Sistem Deteksi Kebakaran - Starting...")
+  File "C:\Users\jacso\AppData\Local\Programs\Python\Python310\lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f525' in position 0: character maps to <undefined>
+
+ERROR:    Application startup failed. Exiting.

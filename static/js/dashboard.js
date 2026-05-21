@@ -98,6 +98,34 @@ const ui = {
 
 let selectedCameraId = null;
 let lastUpdate = Date.now();
+
+
+// ============================================================================
+// IR Flame Sensor (ESP32 GPIO27) — toggle visual saat api terdeteksi
+// ============================================================================
+function updateFlameStatus(detected) {
+  const card = document.getElementById('flame-card');
+  const icon = document.getElementById('flame-icon');
+  const status = document.getElementById('flame-status');
+  const dot = document.getElementById('flame-dot');
+  if (!card || !icon || !status || !dot) return;
+
+  if (detected) {
+    card.className = 'flex items-center justify-between p-3 rounded-lg border bg-red-500/15 border-red-500/60 transition-all animate-pulse';
+    icon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-red-500/30 text-red-400 text-xl transition-all';
+    icon.innerHTML = '<i class="ph-fill ph-flame"></i>';
+    status.className = 'text-sm font-bold text-red-300';
+    status.textContent = '🔥 API TERDETEKSI';
+    dot.className = 'w-3 h-3 rounded-full bg-red-500 animate-pulse';
+  } else {
+    card.className = 'flex items-center justify-between p-3 rounded-lg border bg-zinc-900/50 border-zinc-800 transition-all';
+    icon.className = 'w-10 h-10 rounded-full flex items-center justify-center bg-zinc-800 text-zinc-500 text-xl transition-all';
+    icon.innerHTML = '<i class="ph ph-flame-light"></i>';
+    status.className = 'text-sm font-bold text-zinc-300';
+    status.textContent = 'TIDAK ADA API';
+    dot.className = 'w-3 h-3 rounded-full bg-zinc-600';
+  }
+}
 let allLogs = [];
 let chatHistory = [];  // riwayat percakapan chatbot (direset tiap buka jendela)
 
@@ -266,6 +294,9 @@ function connectWebSocket() {
     ui.sensors.mq4.textContent = ppm.mq4?.ppm.toFixed(1) || 0;
     ui.sensors.mq5.textContent = ppm.mq5?.ppm.toFixed(1) || 0;
     ui.sensors.mq3.textContent = ppm.mq3?.ppm.toFixed(1) || 0;
+
+    // IR Flame Sensor — sinyal binary kritis dari ESP32 GPIO27
+    updateFlameStatus(cam.flame_detected === true);
 
     // Fused Chart
     fusionChart.data.labels.push(data.timestamp);

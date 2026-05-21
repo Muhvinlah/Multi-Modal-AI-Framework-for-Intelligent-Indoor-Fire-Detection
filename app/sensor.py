@@ -43,6 +43,7 @@ class SensorPayload(BaseModel):
     mq7: float = 0.0
     temperature: float = 0.0
     humidity: float = 0.0
+    flame_detected: bool = False   # IR Flame Sensor (GPIO27) — true saat api terdeteksi
 
     @field_validator('mq135', 'mq2', 'mq3', 'mq4', 'mq5', 'mq7', mode='before')
     @classmethod
@@ -120,6 +121,7 @@ async def receive_sensor_data(payload: SensorPayload, request: Request):
         "mq7": payload.mq7,
         "temperature": payload.temperature,
         "humidity": payload.humidity,
+        "flame_detected": payload.flame_detected,
         "timestamp": datetime.now().strftime("%H:%M:%S"),
     }
     update_sensor_data(payload.camera_id, data)
