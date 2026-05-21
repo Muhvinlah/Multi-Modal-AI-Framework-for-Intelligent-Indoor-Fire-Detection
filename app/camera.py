@@ -48,7 +48,11 @@ class CameraStream:
             try:
                 # Buka kamera RTSP (atau webcam jika URL = angka)
                 if self.rtsp_url.isdigit():
-                    cap = cv2.VideoCapture(int(self.rtsp_url), cv2.CAP_DSHOW)
+                    import sys
+                    if sys.platform.startswith("win32"):
+                        cap = cv2.VideoCapture(int(self.rtsp_url), cv2.CAP_DSHOW)
+                    else:
+                        cap = cv2.VideoCapture(int(self.rtsp_url))
                 else:
                     cap = cv2.VideoCapture(self.rtsp_url)
 
