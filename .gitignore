@@ -60,4 +60,5 @@ Thumbs.db
 
 logs/
 
+.conda_pkgs
 
