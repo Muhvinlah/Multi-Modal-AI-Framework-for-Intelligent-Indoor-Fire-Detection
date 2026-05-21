@@ -56,6 +56,12 @@ SYSTEM_MAP.md
 .DS_Store
 Thumbs.db
 .idea/
+.vscode/
 *.swp
 .conda_pkgs
+node_modules/
 
+# ===== Logs & Runtime State =====
+logs/
+*.log
+config_state.json

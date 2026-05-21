@@ -16,12 +16,10 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
 #include <WebServer.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
 #include <Preferences.h>
-#include <WiFiClientSecure.h>
-#include <HTTPClient.h>
+#include <ArduinoJson.h>
 #include <DHT.h>
 
 // ===========================
@@ -35,7 +33,7 @@ const char* AP_PASS = "farhan123";
 // ===========================
 const int mqPins[] = {32, 33, 34, 35, 36, 39};
 const int jumlahSensor = 6;
-String namaSensor[] = {"MQ-4 (CH4)", "MQ-5 (GAS)", "MQ-135 (Air)", "MQ-2 (SMOKE)", "MQ-7 (CO)", "MQ-3 (Metana)"};
+String namaSensor[] = {"MQ-4 (LPG)", "MQ-5 (NATURAL GAS)", "MQ-135 (Air)", "MQ-2 (SMOKE)", "MQ-7 (CO)", "MQ-3 (ALCOHOL)"};
 int sensorValues[6] = {0, 0, 0, 0, 0, 0};
 
 #define LED_PIN   2    // LED built-in
@@ -85,73 +83,58 @@ void checkResetButton();
 const char CONFIG_PAGE[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fire Sensor Setup</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #1a1a2e; color: #e0e0e0;
-           display: flex; justify-content: center; align-items: center;
-           min-height: 100vh; padding: 20px; }
-    .card { background: #16213e; border-radius: 16px; padding: 32px;
-            max-width: 420px; width: 100%; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-    h1 { text-align: center; color: #e94560; margin-bottom: 8px; font-size: 22px; }
-    p.sub { text-align: center; color: #888; margin-bottom: 24px; font-size: 13px; }
-    label { display: block; font-size: 13px; color: #aaa; margin-bottom: 4px; margin-top: 16px; }
-    input[type=text], input[type=password] {
-      width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px;
-      background: #0f3460; color: #fff; font-size: 15px; outline: none; }
-    input:focus { border-color: #e94560; }
-    button { width: 100%; padding: 14px; margin-top: 24px; border: none;
-             border-radius: 8px; background: #e94560; color: #fff;
-             font-size: 16px; font-weight: bold; cursor: pointer; }
-    button:hover { background: #c73e54; }
-    .info { text-align: center; color: #666; font-size: 11px; margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>&#128293; Fire Sensor Setup</h1>
-    <p class="sub">Konfigurasi WiFi & Server</p>
+  <head>
+    <meta charset="UTF-8">
+    <title>🔥 Sensor Setup</title>
+    <style>
+        body{font-family:sans-serif;background:#111;color:#eee;padding:20px;}
+        input,button{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none;}
+        input{background:#222;color:#fff;} 
+        button{background:#e53e3e;color:#fff;font-weight:bold;cursor:pointer;}
+    </style>
+  </head>
+  <body>
+    <h2>🔥 Fire Sensor Setup</h2>
     <form action="/save" method="POST">
-      <label>WiFi SSID</label>
-      <input type="text" name="ssid" placeholder="Nama WiFi" required>
-      <label>WiFi Password</label>
-      <input type="password" name="pass" placeholder="Password WiFi">
-      <label>Server URL</label>
-      <input type="text" name="url" placeholder="https://example.com/api/sensor" required>
-      <label>Camera ID</label>
-      <input type="text" name="cam" placeholder="cam_01" value="cam_01" required>
+      <input type="text" name="ssid" placeholder="WiFi SSID" required><br>
+      <input type="password" name="pass" placeholder="WiFi Password" required><br>
+      <input type="text" name="url" placeholder="Server URL (e.g. http://192.168.x.x/api/sensor)" required><br>
+      <input type="text" name="cam" placeholder="Camera ID" required><br>
       <button type="submit">Simpan & Restart</button>
     </form>
-    <p class="info">Tahan tombol BOOT 5 detik untuk reset konfigurasi</p>
-  </div>
-</body>
+    <p style="margin-top:20px;font-size:12px;color:#888;">💡 Tahan tombol BOOT 5 detik untuk reset konfigurasi.</p>
+  </body>
 </html>
 )rawliteral";
 
 const char SAVE_PAGE[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tersimpan!</title>
-  <style>
-    body { font-family: Arial; background: #1a1a2e; color: #e0e0e0;
-           display: flex; justify-content: center; align-items: center;
-           min-height: 100vh; text-align: center; }
-    .card { background: #16213e; border-radius: 16px; padding: 40px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
-    h1 { color: #4ecca3; font-size: 24px; }
-    p { color: #aaa; margin-top: 12px; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>&#9989; Konfigurasi Tersimpan!</h1>
+  <head>
+    <meta charset="UTF-8">
+    <title>✅ Saved</title>
+    <style>
+      body{font-family:sans-serif;background:#111;color:#eee;text-align:center;padding:40px;}
+      h2{color:#48bb78;} 
+      .spin{
+        border:4px solid #333;
+        border-top:4px solid #48bb78;
+        border-radius:50%;
+        width:30px;
+        height:30px;
+        animation:spin 1s linear infinite;
+        margin:20px auto;
+      }
+      @keyframes spin{
+        0%{transform:rotate(0deg);}
+        100%{transform:rotate(360deg);}}
+    </style>
+  </head>
+  <body>
+    <h2>✅ Konfigurasi Tersimpan!</h2>
+    <div class="spin"></div>
     <p>ESP32 akan restart dalam 3 detik...</p>
-  </div>
-</body>
+  </body>
 </html>
 )rawliteral";
 
@@ -225,7 +208,7 @@ void loop() {
     unsigned long pressStart = millis();
     while (digitalRead(RESET_PIN) == LOW) {
       delay(100);
-      if (millis() - pressStart > 5000) {
+      if (millis() - pressStart >= 5000) {
         Serial.println("[Config] RESET! Menghapus konfigurasi...");
         // Blink cepat sebagai indikator
         for (int i = 0; i < 20; i++) {
@@ -301,12 +284,11 @@ int readMQSensor(int pin) {
 // FUNGSI: Kirim Data ke Server
 // ===========================
 void sendDataToServer() {
+  JsonDocument doc;
   HTTPClient http;
   http.begin(cfg_url.c_str());
   http.addHeader("Content-Type", "application/json");
 
-  // [PENTING] Kapasitas JSON dinaikkan ke 384 agar muat tambahan data
-  StaticJsonDocument<384> doc;
   doc["camera_id"] = cfg_camera;
   doc["mq4"]   = sensorValues[0];
   doc["mq5"]   = sensorValues[1];
