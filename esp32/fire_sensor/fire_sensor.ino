@@ -1,27 +1,46 @@
 // ==============================================================================
-// Tujuan       : Firmware ESP32 untuk 6 sensor gas MQ + DHT22 + kirim data via HTTP
-//                Sensor: MQ135, MQ2, MQ3, MQ4, MQ5, MQ7, DHT22
-//                Fitur: WiFi Captive Portal untuk konfigurasi awal
+// Tujuan       : Firmware ESP32 untuk 6 sensor gas MQ + DHT22 + IR Flame Sensor
+//                + kirim data via HTTPS (Cloudflare Tunnel compatible)
+//                Sensor: MQ135, MQ2, MQ3, MQ4, MQ5, MQ7, DHT22, IR Flame
+//                Fitur: WiFi Captive Portal + HTTPS
 // Caller       : Hardware ESP32 (upload via Arduino IDE)
-// Dependensi   : WiFi.h, HTTPClient.h, WebServer.h, Preferences.h, ArduinoJson.h, DHT.h
-// Main Functions: setup(), loop(), readMQSensor(), readDHTSensor(), sendDataToServer()
+// Dependensi   : WiFi.h, HTTPClient.h, WebServer.h, Preferences.h, ArduinoJson.h,
+//                DHT.h, WiFiClientSecure.h
+// Main Functions: setup(), loop(), readMQSensor(), readDHTSensor(),
+//                 readFlameSensor(), sendDataToServer(),
 //                 startConfigPortal(), handleConfigPage(), handleSaveConfig()
-// Side Effects : HTTP POST ke backend setiap 2 detik
+// Side Effects : HTTPS POST ke backend setiap 2 detik
 //                NVS storage untuk persist konfigurasi WiFi & server
+// ==============================================================================
+// PIN MAPPING:
+//   GPIO 32, 33, 34, 35, 36, 39  →  6 sensor MQ (ADC1, WiFi-safe)
+//   GPIO 4                        →  DHT22 data
+//   GPIO 27                       →  IR Flame Sensor digital output (D0)
+//   GPIO 2                        →  LED built-in
+//   GPIO 0                        →  BOOT button / Reset config
+// ==============================================================================
+// PRODUCTION DEPLOYMENT:
+//   Endpoint default: https://api.firedetection.my.id/api/sensor
+//   TLS Mode: setInsecure() — skip cert verify (OK untuk PBL/demo)
 // ==============================================================================
 // RESET KONFIGURASI:
 //   Tahan tombol BOOT (GPIO0) selama 5 detik saat ESP32 menyala.
-//   LED akan berkedip cepat, lalu ESP32 restart ke mode AP konfigurasi.
+// ==============================================================================
+// IR FLAME SENSOR NOTES:
+//   - Modul umum (KY-026, FC-04): output D0 = LOW saat api terdeteksi (active LOW)
+//   - Jika modul lo active HIGH, ubah #define IR_FLAME_ACTIVE_LOW jadi false
+//   - Sensitivity diatur via potensiometer di modul (putar pelan-pelan
+//     pakai obeng kecil sambil cek serial monitor)
+//   - Range deteksi: 760nm-1100nm IR (flame emits this), ~80cm jarak
 // ==============================================================================
 
 #include <Arduino.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
-#include <WiFiClientSecure.h>
-#include <HTTPClient.h>
 #include <DHT.h>
 
 // ===========================
@@ -29,6 +48,8 @@
 // ===========================
 const char* AP_SSID = "Kel6Api";
 const char* AP_PASS = "farhan123";
+
+const char* DEFAULT_SERVER_URL = "https://api.firedetection.my.id/api/sensor";
 
 // ===========================
 // PIN DEFINISI
@@ -41,16 +62,24 @@ int sensorValues[6] = {0, 0, 0, 0, 0, 0};
 #define LED_PIN   2    // LED built-in
 #define RESET_PIN 0    // Tombol BOOT (GPIO0) untuk reset konfigurasi
 
-// [TAMBAHAN] Pin & Tipe untuk DHT22
-#define DHTPIN 4       // DHT22 Pin Data dihubungkan ke GPIO 4
-#define DHTTYPE DHT22  // Menggunakan DHT22 karena sensor berwarna putih
+// Pin & Tipe untuk DHT22
+#define DHTPIN 26
+#define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
+
+// [BARU] Pin IR Flame Sensor
+#define IR_FLAME_PIN         27       // Digital output (D0) dari modul IR flame
+#define IR_FLAME_ACTIVE_LOW  true     // true = LOW saat api terdeteksi (KY-026, FC-04)
+                                       // false = HIGH saat api terdeteksi (rare)
 
 // ===========================
 // VARIABEL GLOBAL
 // ===========================
 Preferences preferences;
 WebServer configServer(80);
+
+WiFiClientSecure secureClient;
+WiFiClient plainClient;
 
 String cfg_ssid     = "";
 String cfg_password = "";
@@ -61,15 +90,26 @@ unsigned long lastSendTime = 0;
 const unsigned long SEND_INTERVAL = 2000;
 bool wifiConnected = false;
 bool configMode = false;
+bool useHTTPS = false;
 
-// [TAMBAHAN] Variabel untuk menampung suhu dan kelembapan
+unsigned long totalSent = 0;
+unsigned long totalFailed = 0;
+
+// DHT22
 float currentTemp = 0.0;
 float currentHum = 0.0;
 
+// [BARU] IR Flame Sensor
+bool flameDetected = false;
+unsigned long lastFlameAlertTime = 0;
+const unsigned long FLAME_ALERT_THROTTLE = 5000;   // log "FLAME!" max 1x per 5 detik
+
 // Fungsi Prototipe
 void connectWiFi();
-int readMQSensor(int pin);
+void setupTLS();
+int  readMQSensor(int pin);
 void readDHTSensor();
+bool readFlameSensor();
 void sendDataToServer();
 bool loadConfig();
 void saveConfig();
@@ -98,7 +138,7 @@ const char CONFIG_PAGE[] PROGMEM = R"rawliteral(
     h1 { text-align: center; color: #e94560; margin-bottom: 8px; font-size: 22px; }
     p.sub { text-align: center; color: #888; margin-bottom: 24px; font-size: 13px; }
     label { display: block; font-size: 13px; color: #aaa; margin-bottom: 4px; margin-top: 16px; }
-    input[type=text], input[type=password] {
+    input[type=text], input[type=password], input[type=url] {
       width: 100%; padding: 12px; border: 1px solid #333; border-radius: 8px;
       background: #0f3460; color: #fff; font-size: 15px; outline: none; }
     input:focus { border-color: #e94560; }
@@ -107,6 +147,7 @@ const char CONFIG_PAGE[] PROGMEM = R"rawliteral(
              font-size: 16px; font-weight: bold; cursor: pointer; }
     button:hover { background: #c73e54; }
     .info { text-align: center; color: #666; font-size: 11px; margin-top: 16px; }
+    .hint { color: #4ecca3; font-size: 11px; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -119,7 +160,9 @@ const char CONFIG_PAGE[] PROGMEM = R"rawliteral(
       <label>WiFi Password</label>
       <input type="password" name="pass" placeholder="Password WiFi">
       <label>Server URL</label>
-      <input type="text" name="url" placeholder="https://example.com/api/sensor" required>
+      <input type="url" name="url" placeholder="https://api.firedetection.my.id/api/sensor"
+             value="https://api.firedetection.my.id/api/sensor" required>
+      <p class="hint">Default: production endpoint via Cloudflare Tunnel</p>
       <label>Camera ID</label>
       <input type="text" name="cam" placeholder="cam_01" value="cam_01" required>
       <button type="submit">Simpan & Restart</button>
@@ -163,45 +206,64 @@ void setup() {
   delay(1000);
 
   Serial.println("========================================");
-  Serial.println("ESP32 Fire Detection Sensor Module");
+  Serial.println("ESP32 Fire Detection Sensor Module v2.1");
+  Serial.println("Build: HTTPS + IR Flame Sensor");
+  Serial.printf("Free heap awal: %d bytes\n", ESP.getFreeHeap());
   Serial.println("========================================");
 
   pinMode(LED_PIN, OUTPUT);
   pinMode(RESET_PIN, INPUT_PULLUP);
   digitalWrite(LED_PIN, LOW);
 
+  // [BARU] Inisialisasi pin IR Flame Sensor
+  // INPUT_PULLUP — kalau modul disconnect, default ke HIGH (no false alarm di active LOW)
+  pinMode(IR_FLAME_PIN, INPUT_PULLUP);
+
   // Cek tombol RESET saat boot
   checkResetButton();
 
   // Coba load konfigurasi dari NVS
   if (!loadConfig()) {
-    // Belum dikonfigurasi → masuk AP mode
     Serial.println("[Config] Belum ada konfigurasi. Masuk mode setup...");
     startConfigPortal();
-    return; // Loop akan handle config mode
+    return;
   }
 
-  // Konfigurasi ditemukan → mode normal
-  Serial.printf("[Config] SSID: %s\n", cfg_ssid.c_str());
-  Serial.printf("[Config] URL:  %s\n", cfg_url.c_str());
-  Serial.printf("[Config] Cam:  %s\n", cfg_camera.c_str());
+  useHTTPS = cfg_url.startsWith("https://");
+
+  Serial.printf("[Config] SSID:  %s\n", cfg_ssid.c_str());
+  Serial.printf("[Config] URL:   %s\n", cfg_url.c_str());
+  Serial.printf("[Config] Cam:   %s\n", cfg_camera.c_str());
+  Serial.printf("[Config] Mode:  %s\n", useHTTPS ? "HTTPS (TLS)" : "HTTP (plain)");
 
   connectWiFi();
+
+  if (useHTTPS) {
+    setupTLS();
+  }
+
   analogReadResolution(12);
 
-  // [TAMBAHAN] Inisialisasi Sensor DHT22
+  // Inisialisasi Sensor DHT22
   dht.begin();
   Serial.println("[Sensor] DHT22 Initialized!");
 
-  // Pemanasan sensor
-  Serial.println("[Sensor] Warming up (20 detik)...");
+  // [BARU] Cek initial state IR flame sensor
+  Serial.printf("[Sensor] IR Flame initial state: %s (raw=%d)\n",
+                readFlameSensor() ? "DETECTED ⚠️" : "OK (no flame)",
+                digitalRead(IR_FLAME_PIN));
+  Serial.println("[Sensor] Tip: putar potensio di modul IR untuk adjust sensitivity");
+
+  // Pemanasan sensor MQ (IR sensor gak butuh warmup)
+  Serial.println("[Sensor] Warming up MQ sensors (20 detik)...");
   for (int i = 20; i > 0; i--) {
     Serial.printf("  %d detik tersisa...\n", i);
     digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     delay(1000);
   }
   digitalWrite(LED_PIN, HIGH);
-  Serial.println("[Sensor] Sensor siap!");
+  Serial.println("[Sensor] Semua sensor siap!");
+  Serial.printf("[Sensor] Free heap setelah setup: %d bytes\n", ESP.getFreeHeap());
 }
 
 // ===========================
@@ -211,7 +273,6 @@ void loop() {
   // Jika dalam mode konfigurasi, handle web server
   if (configMode) {
     configServer.handleClient();
-    // LED blink lambat saat AP mode
     static unsigned long lastBlink = 0;
     if (millis() - lastBlink > 500) {
       lastBlink = millis();
@@ -227,7 +288,6 @@ void loop() {
       delay(100);
       if (millis() - pressStart > 5000) {
         Serial.println("[Config] RESET! Menghapus konfigurasi...");
-        // Blink cepat sebagai indikator
         for (int i = 0; i < 20; i++) {
           digitalWrite(LED_PIN, !digitalRead(LED_PIN));
           delay(100);
@@ -249,25 +309,62 @@ void loop() {
     lastSendTime = now;
 
     Serial.println("--- Sensor Reading ---");
-    
-    // [TAMBAHAN] Baca data DHT22 sebelum membaca MQ
+
+    // Baca DHT22
     readDHTSensor();
     Serial.printf("Suhu: %.1f C | Kelembapan: %.1f %%\n", currentTemp, currentHum);
 
+    // [BARU] Baca IR Flame Sensor (sebelum MQ biar prioritas tinggi)
+    flameDetected = readFlameSensor();
+    if (flameDetected) {
+      // Throttle alert log biar gak spam
+      if (millis() - lastFlameAlertTime > FLAME_ALERT_THROTTLE) {
+        Serial.println("🔥🔥🔥 [FLAME] API TERDETEKSI! 🔥🔥🔥");
+        lastFlameAlertTime = millis();
+      }
+      // Visual indicator: LED kedip cepat saat flame detected
+      for (int i = 0; i < 6; i++) {
+        digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+        delay(50);
+      }
+      digitalWrite(LED_PIN, HIGH);
+    }
+
+    // Baca semua MQ
     for (int i = 0; i < jumlahSensor; i++) {
       sensorValues[i] = readMQSensor(mqPins[i]);
       Serial.printf("%s: %d | ", namaSensor[i].c_str(), sensorValues[i]);
     }
-    Serial.println();
+    Serial.printf("FLAME: %s\n", flameDetected ? "YES" : "no");
 
     if (wifiConnected) {
       sendDataToServer();
+    } else {
+      Serial.println("[Send] Skip — WiFi belum connect");
     }
 
-    digitalWrite(LED_PIN, LOW);
-    delay(50);
-    digitalWrite(LED_PIN, HIGH);
+    // Heap monitoring (debug TLS leak)
+    if (totalSent % 30 == 0 && totalSent > 0) {
+      Serial.printf("[Stats] Sent: %lu | Failed: %lu | Free heap: %d\n",
+                    totalSent, totalFailed, ESP.getFreeHeap());
+    }
+
+    // Heartbeat LED (kalau gak ada flame)
+    if (!flameDetected) {
+      digitalWrite(LED_PIN, LOW);
+      delay(50);
+      digitalWrite(LED_PIN, HIGH);
+    }
   }
+}
+
+// ===========================
+// FUNGSI: Setup TLS Client
+// ===========================
+void setupTLS() {
+  secureClient.setInsecure();
+  secureClient.setTimeout(15);
+  Serial.println("[TLS] Secure client initialized (insecure mode)");
 }
 
 // ===========================
@@ -286,7 +383,7 @@ void readDHTSensor() {
 }
 
 // ===========================
-// FUNGSI: Baca Sensor MQ
+// FUNGSI: Baca Sensor MQ (analog, 10x oversampling)
 // ===========================
 int readMQSensor(int pin) {
   long total = 0;
@@ -298,26 +395,62 @@ int readMQSensor(int pin) {
 }
 
 // ===========================
-// FUNGSI: Kirim Data ke Server
+// [BARU] FUNGSI: Baca IR Flame Sensor (digital, majority vote)
+// ===========================
+// Ambil 5 sample dengan jeda 5ms, return true kalau >= 3 sample positif.
+// Mengurangi false positive akibat noise EMI dari WiFi/relay.
+bool readFlameSensor() {
+  int activeCount = 0;
+  int targetLevel = IR_FLAME_ACTIVE_LOW ? LOW : HIGH;
+
+  for (int i = 0; i < 5; i++) {
+    if (digitalRead(IR_FLAME_PIN) == targetLevel) {
+      activeCount++;
+    }
+    delay(5);
+  }
+
+  return (activeCount >= 3);   // Majority vote (3/5)
+}
+
+// ===========================
+// FUNGSI: Kirim Data ke Server (HTTPS-aware)
 // ===========================
 void sendDataToServer() {
   HTTPClient http;
-  http.begin(cfg_url.c_str());
-  http.addHeader("Content-Type", "application/json");
 
-  // [PENTING] Kapasitas JSON dinaikkan ke 384 agar muat tambahan data
+  bool beginOk;
+  if (useHTTPS) {
+    beginOk = http.begin(secureClient, cfg_url);
+  } else {
+    beginOk = http.begin(plainClient, cfg_url);
+  }
+
+  if (!beginOk) {
+    Serial.println("[HTTP] begin() gagal — cek URL");
+    totalFailed++;
+    return;
+  }
+
+  http.addHeader("Content-Type", "application/json");
+  http.addHeader("User-Agent", "ESP32-FireDetect/2.1");
+  http.addHeader("Connection", "keep-alive");
+  http.setTimeout(10000);
+  http.setConnectTimeout(5000);
+  http.setReuse(true);
+
+  // Build JSON payload — 384 byte cukup untuk 9 field
   StaticJsonDocument<384> doc;
-  doc["camera_id"] = cfg_camera;
-  doc["mq4"]   = sensorValues[0];
-  doc["mq5"]   = sensorValues[1];
-  doc["mq135"] = sensorValues[2];
-  doc["mq2"]   = sensorValues[3];
-  doc["mq7"]   = sensorValues[4];
-  doc["mq3"]   = sensorValues[5];
-  
-  // [TAMBAHAN] Masukkan data suhu dan kelembapan ke dalam Payload
-  doc["temperature"] = currentTemp;
-  doc["humidity"]    = currentHum;
+  doc["camera_id"]      = cfg_camera;
+  doc["mq4"]            = sensorValues[0];
+  doc["mq5"]            = sensorValues[1];
+  doc["mq135"]          = sensorValues[2];
+  doc["mq2"]            = sensorValues[3];
+  doc["mq7"]            = sensorValues[4];
+  doc["mq3"]            = sensorValues[5];
+  doc["temperature"]    = currentTemp;
+  doc["humidity"]       = currentHum;
+  doc["flame_detected"] = flameDetected;     // [BARU] IR flame sensor
 
   String jsonPayload;
   serializeJson(doc, jsonPayload);
@@ -326,13 +459,29 @@ void sendDataToServer() {
 
   if (httpCode > 0) {
     if (httpCode == 200) {
-      String response = http.getString();
-      Serial.printf("[HTTP] Server: %s\n", response.c_str());
+      totalSent++;
+    } else if (httpCode == 401 || httpCode == 403) {
+      Serial.printf("[HTTP] Auth failed: %d — cek endpoint terbuka untuk ESP32\n", httpCode);
+      totalFailed++;
+    } else if (httpCode == 429) {
+      Serial.println("[HTTP] Rate limited (429) — slow down");
+      totalFailed++;
+    } else if (httpCode == 502 || httpCode == 503) {
+      Serial.printf("[HTTP] Server down (%d) — FastAPI mungkin restart\n", httpCode);
+      totalFailed++;
     } else {
-      Serial.printf("[HTTP] POST failed (code): %d\n", httpCode);
+      Serial.printf("[HTTP] Unexpected status: %d\n", httpCode);
+      totalFailed++;
     }
   } else {
-    Serial.printf("[HTTP] POST gagal: %s\n", http.errorToString(httpCode).c_str());
+    const char* errStr = http.errorToString(httpCode).c_str();
+    Serial.printf("[HTTP] POST gagal (%d): %s\n", httpCode, errStr);
+    totalFailed++;
+
+    if (httpCode == HTTPC_ERROR_CONNECTION_REFUSED ||
+        httpCode == HTTPC_ERROR_CONNECTION_LOST) {
+      Serial.printf("[HTTP] Free heap saat error: %d\n", ESP.getFreeHeap());
+    }
   }
 
   http.end();
@@ -343,7 +492,9 @@ void sendDataToServer() {
 // ===========================
 void connectWiFi() {
   Serial.printf("[WiFi] Connecting to %s", cfg_ssid.c_str());
+
   WiFi.mode(WIFI_STA);
+  WiFi.setSleep(false);   // Stabilitas TLS
   WiFi.begin(cfg_ssid.c_str(), cfg_password.c_str());
 
   int attempts = 0;
@@ -357,6 +508,7 @@ void connectWiFi() {
     wifiConnected = true;
     Serial.println();
     Serial.printf("[WiFi] Connected! IP: %s\n", WiFi.localIP().toString().c_str());
+    Serial.printf("[WiFi] Signal: %d dBm\n", WiFi.RSSI());
   } else {
     wifiConnected = false;
     Serial.println();
@@ -369,14 +521,13 @@ void connectWiFi() {
 // FUNGSI: Load Konfigurasi dari NVS
 // ===========================
 bool loadConfig() {
-  preferences.begin("firesensor", true); // read-only
+  preferences.begin("firesensor", true);
   cfg_ssid     = preferences.getString("ssid", "");
   cfg_password = preferences.getString("pass", "");
   cfg_url      = preferences.getString("url",  "");
   cfg_camera   = preferences.getString("cam",  "");
   preferences.end();
 
-  // Konfigurasi valid jika minimal SSID dan URL ada
   return (cfg_ssid.length() > 0 && cfg_url.length() > 0);
 }
 
@@ -384,7 +535,7 @@ bool loadConfig() {
 // FUNGSI: Simpan Konfigurasi ke NVS
 // ===========================
 void saveConfig() {
-  preferences.begin("firesensor", false); // read-write
+  preferences.begin("firesensor", false);
   preferences.putString("ssid", cfg_ssid);
   preferences.putString("pass", cfg_password);
   preferences.putString("url",  cfg_url);
@@ -417,7 +568,6 @@ void checkResetButton() {
     if (millis() - start >= 5000) {
       Serial.println("[Config] RESET KONFIGURASI!");
       clearConfig();
-      // Blink konfirmasi
       for (int i = 0; i < 10; i++) {
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
         delay(100);
@@ -453,7 +603,7 @@ void startConfigPortal() {
 // FUNGSI: Tampilkan Halaman Konfigurasi
 // ===========================
 void handleConfigPage() {
-  configServer.send(200, "text/html", CONFIG_PAGE); // Pastikan CONFIG_PAGE dideklarasikan di file utama kamu
+  configServer.send(200, "text/html", CONFIG_PAGE);
 }
 
 // ===========================
@@ -465,13 +615,27 @@ void handleSaveConfig() {
   cfg_url      = configServer.arg("url");
   cfg_camera   = configServer.arg("cam");
 
+  cfg_ssid.trim();
+  cfg_url.trim();
+  cfg_camera.trim();
+
   if (cfg_ssid.length() == 0 || cfg_url.length() == 0) {
     configServer.send(400, "text/plain", "SSID dan URL wajib diisi!");
     return;
   }
 
+  if (!cfg_url.startsWith("http://") && !cfg_url.startsWith("https://")) {
+    configServer.send(400, "text/plain",
+                      "URL harus mulai dengan http:// atau https://");
+    return;
+  }
+
+  if (cfg_url.startsWith("http://")) {
+    Serial.println("[Config] ⚠️ HTTP (plain) — gak aman, gunakan HTTPS untuk production");
+  }
+
   saveConfig();
-  configServer.send(200, "text/html", SAVE_PAGE); // Pastikan SAVE_PAGE dideklarasikan di file utama kamu
+  configServer.send(200, "text/html", SAVE_PAGE);
 
   Serial.println("[Config] Restart dalam 3 detik...");
   delay(3000);

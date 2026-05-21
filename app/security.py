@@ -117,10 +117,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "media-src 'self' blob:; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
             "https://cdn.tailwindcss.com https://cdn.jsdelivr.net "
-            "https://unpkg.com; "
+            "https://unpkg.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; "
             "style-src 'self' 'unsafe-inline' "
-            "https://cdn.tailwindcss.com https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com data:; "
+            "https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+            "font-src 'self' https://fonts.gstatic.com data:https://cdn.jsdelivr.net; "
             "connect-src 'self' wss: ws:; "
             "frame-ancestors 'self';"
         )

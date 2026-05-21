@@ -58,4 +58,6 @@ Thumbs.db
 .idea/
 *.swp
 
+logs/
+
 
