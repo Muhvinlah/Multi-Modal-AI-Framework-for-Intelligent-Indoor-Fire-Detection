@@ -259,6 +259,7 @@ async def websocket_monitor(websocket: WebSocket):
                     # --- [TAMBAHAN] Kirim ke Frontend ---
                     "temperature": temperature,
                     "humidity": humidity,
+                    "flame_detected": bool(sensor.get("flame_detected")) if has_sensor else False,
                     "capture": capture_path,
                 }
                 cameras_data.append(cam_data)
