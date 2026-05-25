@@ -110,17 +110,18 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "camera=(), microphone=(), geolocation=(), payment=()"
         )
 
-        # Content Security Policy — adjusted untuk Tailwind CDN + inline styles + cdnjs + jsdelivr
+        # Content Security Policy — Tailwind sekarang lokal (output.css), CDN hanya untuk
+        # chart.js (jsdelivr), html2canvas+jsPDF (cdnjs), phosphor-icons (unpkg)
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "img-src 'self' data: blob: https:; "
             "media-src 'self' blob:; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
-            "https://cdn.tailwindcss.com https://cdn.jsdelivr.net "
-            "https://unpkg.com https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; "
+            "https://cdn.jsdelivr.net https://unpkg.com "
+            "https://cdnjs.cloudflare.com https://static.cloudflareinsights.com; "
             "style-src 'self' 'unsafe-inline' "
-            "https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.jsdelivr.net; "
-            "font-src 'self' https://fonts.gstatic.com data:; "
+            "https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+            "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; "
             "connect-src 'self' wss: ws:; "
             "frame-ancestors 'self';"
         )

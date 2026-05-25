@@ -16,6 +16,7 @@ import asyncio
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Dict, Optional
+from app.executors import llm_pool
 
 from app.config import (
     CHATBOT_MODEL_PATH, CHATBOT_N_CTX, CHATBOT_N_GPU_LAYERS,
@@ -427,9 +428,12 @@ async def chat_with_bot(req: ChatRequest):
         tools_prompt = get_tools_prompt()
         first_pass_context = f"{tools_prompt}\n\nPENGETAHUAN K3:\n{konteks_final}"
 
-        first_response = await asyncio.to_thread(
-            _generate_response, pertanyaan, first_pass_context,
-            sensor_block, effective_history
+        first_response = await asyncio.wait_for(
+            asyncio.get_running_loop().run_in_executor(
+                llm_pool, _generate_response, pertanyaan,
+                first_pass_context, sensor_block, effective_history
+            ),
+            timeout=90.0,
         )
 
         tool_call = parse_tool_call(first_response)
@@ -445,18 +449,27 @@ async def chat_with_bot(req: ChatRequest):
 
             # === 8. Second-pass LLM dengan tool result ===
             final_context = f"{konteks_final}\n\n{tool_result_text}"
-            balasan = await asyncio.to_thread(
-                _generate_response, pertanyaan, final_context,
-                sensor_block, effective_history
+            balasan = await asyncio.wait_for(
+                asyncio.get_running_loop().run_in_executor(
+                    llm_pool, _generate_response, pertanyaan,
+                    final_context, sensor_block, effective_history
+                ),
+                timeout=90.0,
             )
         else:
             # Bot decided no tool needed — pakai response first-pass
             balasan = first_response
     else:
-        balasan = await asyncio.to_thread(
-            _generate_response, pertanyaan, konteks_final,
-            sensor_block, effective_history
-        )
+        try:
+            balasan = await asyncio.wait_for(
+                asyncio.get_running_loop().run_in_executor(
+                    llm_pool, _generate_response, pertanyaan,
+                    konteks_final, sensor_block, effective_history
+                ),
+                timeout=90.0,
+            )
+        except asyncio.TimeoutError:
+            balasan = "Maaf, model terlalu lama merespons. Coba lagi dalam beberapa saat."
 
     return {
         "message_id": uuid.uuid4().hex[:16],

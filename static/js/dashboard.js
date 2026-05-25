@@ -6,22 +6,58 @@
 
 // --- 1. View Switching (Replaces Tabs) ---
 function switchView(viewId) {
+  // Hide all view sections
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+
+  // Reset desktop sidebar nav links
   document.querySelectorAll('.nav-link').forEach(el => {
     el.classList.remove('bg-zinc-900', 'text-indigo-400', 'border', 'border-indigo-500/30', 'font-medium');
     el.classList.add('text-zinc-400', 'hover:bg-zinc-900');
   });
-  
-  document.getElementById(`view-${viewId}`).classList.add('active');
-  const activeBtn = document.querySelector(`.nav-link[onclick="switchView('${viewId}')"]`);
-  if (activeBtn) {
-    activeBtn.classList.add('bg-zinc-900', 'text-indigo-400', 'border', 'border-indigo-500/30', 'font-medium');
-    activeBtn.classList.remove('text-zinc-400', 'hover:bg-zinc-900');
+  const activeNav = document.getElementById(`nav-${viewId}`);
+  if (activeNav) {
+    activeNav.classList.add('bg-zinc-900', 'text-indigo-400', 'border', 'border-indigo-500/30', 'font-medium');
+    activeNav.classList.remove('text-zinc-400', 'hover:bg-zinc-900');
   }
-  
+
+  // Sync mobile bottom tab bar
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  const activeTab = document.getElementById(`tab-${viewId}`);
+  if (activeTab) activeTab.classList.add('active');
+
+  // Show the selected view
+  const viewEl = document.getElementById(`view-${viewId}`);
+  if (viewEl) viewEl.classList.add('active');
+
+  // Scroll content back to top when switching views
+  const scroller = document.getElementById('main-scroll');
+  if (scroller) scroller.scrollTo({ top: 0, behavior: 'smooth' });
+
   if (viewId === 'settings') { loadCameras(); loadThresholds(); }
   if (viewId === 'events') { filterLogs(); }
 }
+
+// ── Theme toggle ──────────────────────────────────────────
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  updateThemeUI();
+}
+
+function updateThemeUI() {
+  const isDark = document.documentElement.classList.contains('dark');
+
+  // Mobile header icon
+  const mobIcon = document.getElementById('theme-icon-mobile');
+  if (mobIcon) mobIcon.className = isDark ? 'ph ph-moon text-lg' : 'ph ph-sun text-lg';
+
+  // Desktop sidebar icon + label
+  const deskIcon = document.getElementById('theme-icon-desktop');
+  if (deskIcon) deskIcon.className = isDark ? 'ph ph-moon text-sm' : 'ph ph-sun text-sm';
+}
+
+// Apply correct icon immediately on page load
+updateThemeUI();
 
 // --- 2. Chart.js Init (Fused Probability) ---
 const fusionCtx = document.getElementById('fusionChart').getContext('2d');
@@ -133,8 +169,8 @@ let chatHistory = [];  // riwayat percakapan chatbot (direset tiap buka jendela)
 setInterval(() => {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
-  const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
   const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
   if (ui.clock) ui.clock.textContent = timeStr;
   if (ui.cameraTime) ui.cameraTime.textContent = timeStr;
@@ -227,7 +263,7 @@ let ws;
 function connectWebSocket() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(`${protocol}//${window.location.host}/ws/monitor`);
-  
+
   ws.onopen = () => {
     ui.wsStatus.textContent = 'TERHUBUNG';
     ui.wsStatus.className = 'text-xs px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/50 text-emerald-400 font-bold';
@@ -237,6 +273,10 @@ function connectWebSocket() {
   ws.onmessage = (event) => {
     lastUpdate = Date.now(); // Reset staleness
     const data = JSON.parse(event.data);
+
+    // Ignore keepalive pings from server
+    if (data.type === 'ping') return;
+
     const cameras = data.cameras || [];
 
     ui.kpiCams.textContent = `${cameras.length} Online`;
@@ -251,11 +291,9 @@ function connectWebSocket() {
       if (hasSensor) {
         ui.sensorStatus.textContent = 'ESP32 OK';
         ui.sensorStatus.className = 'text-xs px-2 py-0.5 rounded bg-blue-500/20 border border-blue-500/50 text-blue-400 font-bold';
-        ui.sensorDot.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
       } else {
         ui.sensorStatus.textContent = 'SENSOR --';
         ui.sensorStatus.className = 'text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400 font-bold';
-        ui.sensorDot.className = 'w-2 h-2 rounded-full bg-zinc-500';
       }
     }
 
@@ -323,6 +361,8 @@ function connectWebSocket() {
     if (ui.sensorStatus) {
       ui.sensorStatus.textContent = 'SENSOR --';
       ui.sensorStatus.className = 'text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400 font-bold';
+    }
+    if (ui.sensorDot) {
       ui.sensorDot.className = 'w-2 h-2 rounded-full bg-zinc-500';
     }
     setTimeout(connectWebSocket, 3000);
@@ -392,10 +432,10 @@ function addCaptureEvent(path, status, gasType, timestamp) {
   if (!feed) return;
   const placeholder = feed.querySelector('p');
   if (placeholder) placeholder.remove();
-  
+
   const card = document.createElement('div');
   card.className = 'flex-shrink-0 w-48 bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-600 transition cursor-pointer';
-  const t = timestamp ? new Date(timestamp).toLocaleTimeString('id-ID', {hour12: false}) : '--:--';
+  const t = timestamp ? new Date(timestamp).toLocaleTimeString('id-ID', { hour12: false }) : '--:--';
   const color = status === 'Bahaya' ? 'bg-red-500' : status === 'Waspada' ? 'bg-yellow-500' : 'bg-zinc-500';
   card.innerHTML = `
     <img src="${path}" class="w-full h-28 object-cover" loading="lazy" onclick="window.open('${path}','_blank')">
@@ -425,38 +465,38 @@ function filterLogs() {
 
 // --- 7. Settings & Chatbot ---
 async function loadCameras() {
-    try {
-        const res = await fetch('/api/cameras');
-        const data = await res.json();
-        const list = document.getElementById('camera-list');
-        const cameras = data.cameras || {};
-        if (Object.keys(cameras).length === 0) {
-            list.innerHTML = '<p class="text-xs text-zinc-500 italic">Belum ada kamera terdaftar.</p>';
-            return;
-        }
-        list.innerHTML = '';
-        for (const [id, cfg] of Object.entries(cameras)) {
-            const div = document.createElement('div');
-            div.className = 'flex items-center justify-between bg-zinc-900/80 border border-zinc-800 rounded-lg px-4 py-3';
-            div.innerHTML = `<div class="flex-grow"><span class="text-sm font-bold text-zinc-200">${cfg.name || id}</span><span class="text-xs text-zinc-500 ml-2">[${id}]</span><p class="text-xs text-zinc-500 font-mono mt-0.5">${cfg.rtsp_url}</p></div><button onclick="deleteCamera('${id}')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold ml-4">Hapus</button>`;
-            list.appendChild(div);
-        }
-    } catch (e) { console.error('Error loading cameras:', e); }
+  try {
+    const res = await fetch('/api/cameras');
+    const data = await res.json();
+    const list = document.getElementById('camera-list');
+    const cameras = data.cameras || {};
+    if (Object.keys(cameras).length === 0) {
+      list.innerHTML = '<p class="text-xs text-zinc-500 italic">Belum ada kamera terdaftar.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    for (const [id, cfg] of Object.entries(cameras)) {
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between bg-zinc-900/80 border border-zinc-800 rounded-lg px-4 py-3';
+      div.innerHTML = `<div class="flex-grow"><span class="text-sm font-bold text-zinc-200">${cfg.name || id}</span><span class="text-xs text-zinc-500 ml-2">[${id}]</span><p class="text-xs text-zinc-500 font-mono mt-0.5">${cfg.rtsp_url}</p></div><button onclick="deleteCamera('${id}')" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold ml-4">Hapus</button>`;
+      list.appendChild(div);
+    }
+  } catch (e) { console.error('Error loading cameras:', e); }
 }
 
 async function addCamera(e) {
-    if (e) e.preventDefault();
-    const id = document.getElementById('new-cam-id').value.trim();
-    const name = document.getElementById('new-cam-name').value.trim();
-    const url = document.getElementById('new-cam-url').value.trim();
-    if (!id || !name || !url) { alert('Semua field harus diisi!'); return; }
-    try {
-        await fetch('/api/cameras', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cam_id: id, name: name, rtsp_url: url }) });
-        document.getElementById('new-cam-id').value = '';
-        document.getElementById('new-cam-name').value = '';
-        document.getElementById('new-cam-url').value = '';
-        loadCameras();
-    } catch (err) { alert('Gagal menambah kamera: ' + err); }
+  if (e) e.preventDefault();
+  const id = document.getElementById('new-cam-id').value.trim();
+  const name = document.getElementById('new-cam-name').value.trim();
+  const url = document.getElementById('new-cam-url').value.trim();
+  if (!id || !name || !url) { alert('Semua field harus diisi!'); return; }
+  try {
+    await fetch('/api/cameras', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ cam_id: id, name: name, rtsp_url: url }) });
+    document.getElementById('new-cam-id').value = '';
+    document.getElementById('new-cam-name').value = '';
+    document.getElementById('new-cam-url').value = '';
+    loadCameras();
+  } catch (err) { alert('Gagal menambah kamera: ' + err); }
 }
 
 function fillWebcam(index) {
@@ -466,39 +506,39 @@ function fillWebcam(index) {
 }
 
 async function deleteCamera(camId) {
-    if (!confirm(`Hapus kamera ${camId}?`)) return;
-    try { await fetch(`/api/cameras/${camId}`, { method: 'DELETE' }); loadCameras(); } catch (e) { alert('Gagal: ' + e); }
+  if (!confirm(`Hapus kamera ${camId}?`)) return;
+  try { await fetch(`/api/cameras/${camId}`, { method: 'DELETE' }); loadCameras(); } catch (e) { alert('Gagal: ' + e); }
 }
 
 async function loadThresholds() {
-    try {
-        const res = await fetch('/api/thresholds');
-        const th = (await res.json()).thresholds || {};
-        document.getElementById('th-prob-aman').value = th.prob_aman ?? 30;
-        document.getElementById('th-prob-waspada').value = th.prob_waspada ?? 70;
-        document.getElementById('th-yolo-threshold').value = th.yolo_threshold ?? 50;
-        document.getElementById('th-yolo-weight-high').value = th.yolo_weight_high ?? 0.7;
-        document.getElementById('th-yolo-weight-low').value = th.yolo_weight_low ?? 0.3;
-        document.getElementById('th-yolo-interval').value = th.yolo_interval ?? 3;
-    } catch (e) { console.error('Error loading thresholds:', e); }
+  try {
+    const res = await fetch('/api/thresholds');
+    const th = (await res.json()).thresholds || {};
+    document.getElementById('th-prob-aman').value = th.prob_aman ?? 30;
+    document.getElementById('th-prob-waspada').value = th.prob_waspada ?? 70;
+    document.getElementById('th-yolo-threshold').value = th.yolo_threshold ?? 50;
+    document.getElementById('th-yolo-weight-high').value = th.yolo_weight_high ?? 0.7;
+    document.getElementById('th-yolo-weight-low').value = th.yolo_weight_low ?? 0.3;
+    document.getElementById('th-yolo-interval').value = th.yolo_interval ?? 3;
+  } catch (e) { console.error('Error loading thresholds:', e); }
 }
 
 async function saveThresholds(e) {
-    if (e) e.preventDefault();
-    const payload = {
-        prob_aman: parseFloat(document.getElementById('th-prob-aman').value),
-        prob_waspada: parseFloat(document.getElementById('th-prob-waspada').value),
-        yolo_threshold: parseFloat(document.getElementById('th-yolo-threshold').value),
-        yolo_weight_high: parseFloat(document.getElementById('th-yolo-weight-high').value),
-        yolo_weight_low: parseFloat(document.getElementById('th-yolo-weight-low').value),
-        yolo_interval: parseFloat(document.getElementById('th-yolo-interval').value),
-    };
-    try {
-        await fetch('/api/thresholds', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        const st = document.getElementById('threshold-status');
-        st.classList.remove('hidden');
-        setTimeout(() => st.classList.add('hidden'), 2000);
-    } catch (err) { alert('Gagal menyimpan: ' + err); }
+  if (e) e.preventDefault();
+  const payload = {
+    prob_aman: parseFloat(document.getElementById('th-prob-aman').value),
+    prob_waspada: parseFloat(document.getElementById('th-prob-waspada').value),
+    yolo_threshold: parseFloat(document.getElementById('th-yolo-threshold').value),
+    yolo_weight_high: parseFloat(document.getElementById('th-yolo-weight-high').value),
+    yolo_weight_low: parseFloat(document.getElementById('th-yolo-weight-low').value),
+    yolo_interval: parseFloat(document.getElementById('th-yolo-interval').value),
+  };
+  try {
+    await fetch('/api/thresholds', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const st = document.getElementById('threshold-status');
+    st.classList.remove('hidden');
+    setTimeout(() => st.classList.add('hidden'), 2000);
+  } catch (err) { alert('Gagal menyimpan: ' + err); }
 }
 
 async function downloadPDF() {
@@ -737,10 +777,10 @@ async function sendChatMessage() {
     if (data.lstm?.available) {
       const lstm = data.lstm;
       const colorMap = {
-        green:  'bg-green-500/20 text-green-300 border-green-500/40',
+        green: 'bg-green-500/20 text-green-300 border-green-500/40',
         yellow: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
         orange: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
-        red:    'bg-red-500/20 text-red-300 border-red-500/40',
+        red: 'bg-red-500/20 text-red-300 border-red-500/40',
       };
       const colorClass = colorMap[lstm.color] || colorMap.yellow;
       const pct = Math.round(lstm.anomaly_score * 100);
