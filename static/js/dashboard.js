@@ -245,6 +245,10 @@ function connectWebSocket() {
   ws.onmessage = (event) => {
     lastUpdate = Date.now(); // Reset staleness
     const data = JSON.parse(event.data);
+
+    // Ignore keepalive pings from server
+    if (data.type === 'ping') return;
+
     const cameras = data.cameras || [];
 
     ui.kpiCams.textContent = `${cameras.length} Online`;

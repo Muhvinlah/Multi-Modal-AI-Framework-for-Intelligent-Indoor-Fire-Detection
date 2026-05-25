@@ -25,7 +25,7 @@ CHAT_ID = os.getenv("CHAT_ID", "")
 THROTTLE_SECONDS = 50
 
 # --- Path Model ---
-YOLO_MODEL_PATH = "models/best.pt"
+YOLO_MODEL_PATH = "models/yolo11s.pt"
 XGBOOST_MODEL_PATH = "models/fire_detection_rf.pkl"
 CHATBOT_MODEL_PATH = os.getenv("CHATBOT_MODEL_PATH", "models/qwen2.5-3b-k3-q4_k_m.gguf")
 
