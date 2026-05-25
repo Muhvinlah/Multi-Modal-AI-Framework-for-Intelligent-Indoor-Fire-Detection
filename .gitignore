@@ -58,6 +58,9 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+logs/
+
 .conda_pkgs
 node_modules/
 
