@@ -1,12 +1,12 @@
 // ==============================================================================
-// Tujuan       : Firmware ESP32 untuk 6 sensor gas MQ + DHT22 + IR Flame Sensor
+// Tujuan       : Firmware ESP32 untuk 6 sensor gas MQ + SHTC3 + IR Flame Sensor
 //                + kirim data via HTTPS (Cloudflare Tunnel compatible)
-//                Sensor: MQ135, MQ2, MQ3, MQ4, MQ5, MQ7, DHT22, IR Flame
+//                Sensor: MQ135, MQ2, MQ3, MQ4, MQ5, MQ7, SHTC3, IR Flame
 //                Fitur: WiFi Captive Portal + HTTPS
 // Caller       : Hardware ESP32 (upload via Arduino IDE)
 // Dependensi   : WiFi.h, HTTPClient.h, WebServer.h, Preferences.h, ArduinoJson.h,
-//                DHT.h, WiFiClientSecure.h
-// Main Functions: setup(), loop(), readMQSensor(), readDHTSensor(),
+//                Wire.h, Adafruit_SHTC3.h, WiFiClientSecure.h
+// Main Functions: setup(), loop(), readMQSensor(), readSHTC3Sensor(),
 //                 readFlameSensor(), sendDataToServer(),
 //                 startConfigPortal(), handleConfigPage(), handleSaveConfig()
 // Side Effects : HTTPS POST ke backend setiap 2 detik
@@ -14,10 +14,11 @@
 // ==============================================================================
 // PIN MAPPING:
 //   GPIO 32, 33, 34, 35, 36, 39  →  6 sensor MQ (ADC1, WiFi-safe)
-//   GPIO 4                        →  DHT22 data
-//   GPIO 27                       →  IR Flame Sensor digital output (D0)
-//   GPIO 2                        →  LED built-in
-//   GPIO 0                        →  BOOT button / Reset config
+//   GPIO 25                      →  SHTC3 SDA
+//   GPIO 26                      →  SHTC3 SCL
+//   GPIO 27                      →  IR Flame Sensor digital output (D0)
+//   GPIO 2                       →  LED built-in
+//   GPIO 0                       →  BOOT button / Reset config
 // ==============================================================================
 // PRODUCTION DEPLOYMENT:
 //   Endpoint default: https://api.firedetection.my.id/api/sensor
@@ -36,11 +37,13 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WebServer.h>
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
-#include <DHT.h>
+#include <Wire.h>
+#include "Adafruit_SHTC3.h"
 
 // ===========================
 // KONFIGURASI CAPTIVE PORTAL
@@ -61,15 +64,15 @@ int sensorValues[6] = {0, 0, 0, 0, 0, 0};
 #define LED_PIN   2    // LED built-in
 #define RESET_PIN 0    // Tombol BOOT (GPIO0) untuk reset konfigurasi
 
-// Pin & Tipe untuk DHT22
-#define DHTPIN 26
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
+// Pin & Objek SHTC3
+#define SDA_PIN 25
+#define SCL_PIN 26
+Adafruit_SHTC3 shtc3 = Adafruit_SHTC3();
 
 // [BARU] Pin IR Flame Sensor
 #define IR_FLAME_PIN         27       // Digital output (D0) dari modul IR flame
 #define IR_FLAME_ACTIVE_LOW  true     // true = LOW saat api terdeteksi (KY-026, FC-04)
-                                       // false = HIGH saat api terdeteksi (rare)
+                                      // false = HIGH saat api terdeteksi (rare)
 
 // ===========================
 // VARIABEL GLOBAL
@@ -94,7 +97,7 @@ bool useHTTPS = false;
 unsigned long totalSent = 0;
 unsigned long totalFailed = 0;
 
-// DHT22
+// SHTC3 (Suhu & Kelembapan)
 float currentTemp = 0.0;
 float currentHum = 0.0;
 
@@ -107,7 +110,7 @@ const unsigned long FLAME_ALERT_THROTTLE = 5000;   // log "FLAME!" max 1x per 5 
 void connectWiFi();
 void setupTLS();
 int  readMQSensor(int pin);
-void readDHTSensor();
+void readSHTC3Sensor();
 bool readFlameSensor();
 void sendDataToServer();
 bool loadConfig();
@@ -167,7 +170,8 @@ const char CONFIG_PAGE[] PROGMEM = R"rawliteral(
       <button type="submit">Simpan & Restart</button>
     </form>
     <p style="margin-top:20px;font-size:12px;color:#888;">💡 Tahan tombol BOOT 5 detik untuk reset konfigurasi.</p>
-  </body>
+  </div>
+</body>
 </html>
 )rawliteral";
 
@@ -211,7 +215,7 @@ void setup() {
 
   Serial.println("========================================");
   Serial.println("ESP32 Fire Detection Sensor Module v2.1");
-  Serial.println("Build: HTTPS + IR Flame Sensor");
+  Serial.println("Build: HTTPS + SHTC3 + IR Flame Sensor");
   Serial.printf("Free heap awal: %d bytes\n", ESP.getFreeHeap());
   Serial.println("========================================");
 
@@ -248,9 +252,13 @@ void setup() {
 
   analogReadResolution(12);
 
-  // Inisialisasi Sensor DHT22
-  dht.begin();
-  Serial.println("[Sensor] DHT22 Initialized!");
+  // Inisialisasi I2C (untuk SHTC3)
+  Wire.begin(SDA_PIN, SCL_PIN);
+  if (!shtc3.begin()) {
+    Serial.println("[Sensor Error] SHTC3 tidak ditemukan! Cek koneksi kabel.");
+  } else {
+    Serial.println("[Sensor] SHTC3 Initialized!");
+  }
 
   // [BARU] Cek initial state IR flame sensor
   Serial.printf("[Sensor] IR Flame initial state: %s (raw=%d)\n",
@@ -314,8 +322,8 @@ void loop() {
 
     Serial.println("--- Sensor Reading ---");
 
-    // Baca DHT22
-    readDHTSensor();
+    // Baca SHTC3
+    readSHTC3Sensor();
     Serial.printf("Suhu: %.1f C | Kelembapan: %.1f %%\n", currentTemp, currentHum);
 
     // [BARU] Baca IR Flame Sensor (sebelum MQ biar prioritas tinggi)
@@ -372,17 +380,17 @@ void setupTLS() {
 }
 
 // ===========================
-// FUNGSI: Baca Sensor DHT22
+// FUNGSI: Baca Sensor SHTC3
 // ===========================
-void readDHTSensor() {
-  float h = dht.readHumidity();
-  float t = dht.readTemperature();
+void readSHTC3Sensor() {
+  sensors_event_t humidity, temp;
+  shtc3.getEvent(&humidity, &temp); // Mengambil event terbaru
 
-  if (isnan(h) || isnan(t)) {
-    Serial.println("[Sensor Error] Gagal membaca data dari DHT22!");
+  if (isnan(temp.temperature) || isnan(humidity.relative_humidity)) {
+    Serial.println("[Sensor Error] Gagal membaca data dari SHTC3!");
   } else {
-    currentTemp = t;
-    currentHum = h;
+    currentTemp = temp.temperature;
+    currentHum = humidity.relative_humidity;
   }
 }
 
@@ -445,20 +453,20 @@ void sendDataToServer() {
   http.setReuse(true);
 
   // Build JSON payload — 384 byte cukup untuk 9 field
-  StaticJsonDocument<384> doc;
-  doc["camera_id"]      = cfg_camera;
-  doc["mq4"]            = sensorValues[0];
-  doc["mq5"]            = sensorValues[1];
-  doc["mq135"]          = sensorValues[2];
-  doc["mq2"]            = sensorValues[3];
-  doc["mq7"]            = sensorValues[4];
-  doc["mq3"]            = sensorValues[5];
-  doc["temperature"]    = currentTemp;
-  doc["humidity"]       = currentHum;
-  doc["flame_detected"] = flameDetected;     // [BARU] IR flame sensor
+  StaticJsonDocument<384> doc_payload;
+  doc_payload["camera_id"]      = cfg_camera;
+  doc_payload["mq4"]            = sensorValues[0];
+  doc_payload["mq5"]            = sensorValues[1];
+  doc_payload["mq135"]          = sensorValues[2];
+  doc_payload["mq2"]            = sensorValues[3];
+  doc_payload["mq7"]            = sensorValues[4];
+  doc_payload["mq3"]            = sensorValues[5];
+  doc_payload["temperature"]    = currentTemp;
+  doc_payload["humidity"]       = currentHum;
+  doc_payload["flame_detected"] = flameDetected;     // [BARU] IR flame sensor
 
   String jsonPayload;
-  serializeJson(doc, jsonPayload);
+  serializeJson(doc_payload, jsonPayload);
 
   int httpCode = http.POST(jsonPayload);
 

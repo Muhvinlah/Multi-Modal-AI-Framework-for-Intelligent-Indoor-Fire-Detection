@@ -55,6 +55,7 @@ class CameraStream:
                         cap = cv2.VideoCapture(int(self.rtsp_url))
                 else:
                     cap = cv2.VideoCapture(self.rtsp_url)
+                    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
                 if not cap.isOpened():
                     print(f"[Camera {self.cam_id}] Gagal membuka: {self.rtsp_url}")
@@ -62,14 +63,22 @@ class CameraStream:
                     continue
 
                 print(f"[Camera {self.cam_id}] Terhubung: {self.rtsp_url}")
+                
+                last_frame_time = time.time()
+                FROZEN_TIMEOUT = 10  # detik
 
                 while self._running:
                     ret, frame = cap.read()
                     if not ret:
                         print(f"[Camera {self.cam_id}] Frame lost, reconnecting...")
                         break
+                    if time.time() - last_frame_time > FROZEN_TIMEOUT:
+                        print(f"[Camera {self.cam_id}] Stream frozen, reconnecting...")
+                        break
+                
                     with self._lock:
                         self._frame = frame
+                        last_frame_time = time.time()
 
             except Exception as e:
                 print(f"[Camera {self.cam_id}] Error: {e}")
