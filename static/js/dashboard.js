@@ -754,7 +754,7 @@ async function sendChatMessage() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, history: chatHistory.slice(-6), sensor_context }),
+      body: JSON.stringify({ pertanyaan: msg, history: chatHistory.slice(-6), sensor_context }),
     });
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -811,4 +811,25 @@ async function sendChatMessage() {
     if (sendBtn) { sendBtn.disabled = false; sendBtn.classList.remove('opacity-50'); }
     chatInput.focus();
   }
+
 }
+
+async function pollChatbotHealth() {
+  try {
+    const res = await fetch('/api/chat/health');
+    const data = await res.json();
+    const indicator = document.getElementById('chatbot-indicator');
+    const label = document.getElementById('chatbot-status');
+    if (indicator) {
+      indicator.classList.toggle('bg-green-400', data.available);
+      indicator.classList.toggle('bg-zinc-500', !data.available);
+      indicator.classList.toggle('opacity-50', !data.available);
+    }
+    if (label) label.textContent = data.available ? '● Online' : '● Offline';
+  } catch {
+    const label = document.getElementById('chatbot-status');
+    if (label) label.textContent = '● Offline';
+  }
+}
+setInterval(pollChatbotHealth, 30000);
+pollChatbotHealth();

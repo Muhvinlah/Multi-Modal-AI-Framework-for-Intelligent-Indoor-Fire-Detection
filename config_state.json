@@ -21,7 +21,7 @@
     "prob_waspada": 70.0,
     "yolo_weight_high": 0.6,
     "yolo_weight_low": 0.3,
-    "yolo_threshold": 60.0,
+    "yolo_threshold": 70.0,
     "yolo_interval": 3.0,
     "sensor_interval": 2.0
   }

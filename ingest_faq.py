@@ -18,7 +18,7 @@ from app.config import (
     CHROMA_DB_PATH, CHROMA_COLLECTION,
     EMBEDDING_MODEL_NAME, BM25_INDEX_PATH,
 )
-from app.rag_engine import build_bm25_index
+from chatbot_service.rag_engine import build_bm25_index
 
 FAQ_DIR = "docs/faq"
 _IS_E5 = "e5" in EMBEDDING_MODEL_NAME.lower()

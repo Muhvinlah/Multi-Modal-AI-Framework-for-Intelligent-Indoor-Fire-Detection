@@ -2,10 +2,11 @@
 # Tujuan       : Entry point aplikasi Sistem Deteksi Kebakaran
 #                Import semua router dari app/ dan start FastAPI
 # Caller       : uvicorn (CLI)
-# Dependensi   : app.auth, app.sensor, app.websocket_handler, app.chatbot,
-#                app.pdf_export, app.ai_engine, app.camera, app.config
+# Dependensi   : app.auth, app.sensor, app.websocket_handler, app.chatbot_proxy,
+#                app.pdf_export, app.ai_engine, app.camera, app.config,
+#                app.internal_api
 # Main Functions: lifespan(), app
-# Side Effects : Load AI models, start kamera, load chatbot
+# Side Effects : Load AI models, start kamera. Chatbot via chatbot_service:8001
 # ==============================================================================
 
 import os
@@ -27,7 +28,6 @@ async def lifespan(app: FastAPI):
     """Startup & shutdown lifecycle."""
     # --- STARTUP ---
     from app.ai_engine import load_models
-    from app.chatbot import load_chatbot
     from app.camera import camera_manager
     from app.config import get_cameras
 
@@ -35,11 +35,21 @@ async def lifespan(app: FastAPI):
     print("🔥 Sistem Deteksi Kebakaran - Starting...")
     print("=" * 50)
 
-    # 1. Load AI Models (YOLO + XGBoost)
+    # 1. Cap CUDA memory so YOLO + LSTM share max 20% (1.2 GB on 6 GB card).
+    #    vLLM takes its own 45% (2.7 GB) via --gpu-memory-utilization.
+    #    The two processes add up to 65%, leaving 35% headroom.
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.set_per_process_memory_fraction(0.20, device=0)
+            print("[Startup] CUDA memory fraction: 20% (6GB laptop mode)")
+    except Exception as _e:
+        print(f"[Startup] CUDA fraction set failed: {_e}")
+
+    # 2. Load AI Models (YOLO + XGBoost)
     load_models()
 
-    # 2. Load Chatbot (SLM + ChromaDB)
-    load_chatbot()
+    # 2. Chatbot — now served by chatbot_service (port 8001), no local model load
 
     from app.lstm_anomaly import load_lstm_model
     load_lstm_model()
@@ -101,7 +111,7 @@ if _ENV == "production":
         allow_headers=["*"],
     )
     print(f"[Startup] Production mode aktif. Allowed hosts: {_ALLOWED_HOSTS}")
-
+     
 # --- Static Files ---
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -109,9 +119,10 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 from app.auth import router as auth_router
 from app.sensor import router as sensor_router
 from app.websocket_handler import router as ws_router
-from app.chatbot import router as chat_router
+from app.chatbot_proxy import router as chat_router
 from app.pdf_export import router as pdf_router
 from app.feedback import router as feedback_router
+from app.internal_api import router as internal_router
 
 app.include_router(auth_router)
 app.include_router(sensor_router)
@@ -119,3 +130,4 @@ app.include_router(ws_router)
 app.include_router(chat_router)
 app.include_router(pdf_router)
 app.include_router(feedback_router)
+app.include_router(internal_router)
