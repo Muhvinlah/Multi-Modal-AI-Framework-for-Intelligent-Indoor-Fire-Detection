@@ -57,7 +57,10 @@ async def generate(
             stop=stop,
             stream=False,
         )
-        return resp.choices[0].message.content.strip()
+        content = (resp.choices[0].message.content or "").replace('\x00', '').strip()
+        if not content:
+            raise ValueError("Model returned empty/null response — model mungkin BASE bukan Instruct")
+        return content
     except APITimeoutError:
         raise
     except APIError as e:

@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from chatbot_service.config import cfg
 from chatbot_service.llm_engine import generate, health_check
 from chatbot_service.prompt_builder import build_messages
-from chatbot_service.intent_router import classify_intent, smalltalk_response
+from chatbot_service.intent_router import classify_intent, smalltalk_response, out_of_domain_response
 from chatbot_service.rag_engine import load_rag_engine, retrieve
 from chatbot_service.chat_tools import (
     get_tools_prompt, parse_tool_call, dispatch, format_tool_result,
@@ -127,11 +127,17 @@ async def chat(req: ChatRequest):
     # 1. Intent classification
     intent = classify_intent(pertanyaan, has_sensor_context=has_sensor)
 
-    # 2. Fast-path smalltalk (no LLM call)
+    # 2. Fast-path: no LLM call for smalltalk or out-of-domain
     if intent == "smalltalk":
         return ChatResponse(
             message_id=uuid.uuid4().hex[:16],
             reply=smalltalk_response(pertanyaan),
+            intent=intent,
+        )
+    if intent == "out_of_domain":
+        return ChatResponse(
+            message_id=uuid.uuid4().hex[:16],
+            reply=out_of_domain_response(),
             intent=intent,
         )
 

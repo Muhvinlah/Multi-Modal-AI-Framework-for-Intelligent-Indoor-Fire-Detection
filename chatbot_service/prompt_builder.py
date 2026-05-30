@@ -31,6 +31,10 @@ GAYA JAWAB:
 - Untuk prosedur K3 (APAR, evakuasi, P3K, kelas kebakaran): WAJIB jelaskan setiap \
 langkah, alasan di baliknya, dan kondisi kapan TIDAK boleh dilakukan.
 
+BATASAN DOMAIN (WAJIB DIIKUTI):
+- Kamu HANYA menjawab pertanyaan tentang K3, keselamatan kebakaran, sensor, sistem deteksi kebakaran, prosedur darurat, dan topik terkait.
+- Untuk pertanyaan di luar domain ini (politik, hiburan, tokoh publik, olahraga, resep, dll): tolak dengan sopan: "Maaf, saya hanya dapat membantu pertanyaan seputar K3 dan sistem deteksi kebakaran."
+
 ATURAN FAKTUAL (WAJIB DIIKUTI):
 1. Sensor nilai 0 = "belum terhubung" atau "offline". JANGAN sebut 0 sebagai kondisi \
 normal atau "aman". Sarankan cek koneksi ESP32.
@@ -65,7 +69,7 @@ def get_length_budget(intent: str, question: str) -> Tuple[int, str]:
         return cfg.max_tokens_short, "Jawab singkat 1-2 kalimat."
 
     if intent == "tool_needed":
-        return cfg.max_tokens_medium, "Jawab spesifik berdasarkan data tool secara kontekstual."
+        return cfg.max_tokens_long, "Jawab lengkap dan terstruktur berdasarkan data sensor/tool. Selesaikan setiap poin hingga tuntas."
 
     if intent == "system_meta":
         return cfg.max_tokens_medium, "Jawab informatif dengan konteks sistem."
