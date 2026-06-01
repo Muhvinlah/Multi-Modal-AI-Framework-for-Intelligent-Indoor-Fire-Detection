@@ -11,7 +11,7 @@
 $PROJECT_WIN = (Get-Location).Path
 $drive = $PROJECT_WIN[0].ToString().ToLower()
 $rest = $PROJECT_WIN.Substring(2).Replace('\', '/')
-$MODEL_WSL = "/mnt/$drive$rest/models/qwen2.5-3b-base-awq"
+$MODEL_WSL = "/mnt/$drive$rest/models/qwen2.5-3b-instruct-awq"
 
 Write-Host "Starting vLLM in WSL2 Ubuntu..."
 Write-Host "  Model : $MODEL_WSL"
@@ -59,10 +59,9 @@ exec vllm serve "$MODEL" \
     --port 8002 \
     --quantization awq \
     --dtype float16 \
-    --max-model-len 2048 \
-    --gpu-memory-utilization 0.45 \
-    --max-num-seqs 4 \
-    --enable-prefix-caching \
+    --max-model-len 4096 \
+    --gpu-memory-utilization 0.50 \
+    --max-num-seqs 2 \
     --enforce-eager \
     --trust-remote-code
 '@

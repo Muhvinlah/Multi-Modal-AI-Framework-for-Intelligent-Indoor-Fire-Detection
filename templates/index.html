@@ -15,6 +15,10 @@
     })();
   </script>
 
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#ef4444">
   <link rel="stylesheet" href="/static/css/output.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -248,6 +252,11 @@
         class="hidden sm:inline text-xs px-2 py-0.5 rounded bg-zinc-800/60 border border-zinc-700 text-zinc-300 font-medium"
         id="ws-status">TERHUBUNG</span>
       <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" id="ws-dot"></span>
+      <!-- Bug 2: ESP32 sensor connection badge -->
+      <span
+        class="hidden md:inline text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400 font-bold"
+        id="sensor-status">SENSOR --</span>
+      <span class="hidden md:inline w-2 h-2 rounded-full bg-zinc-500 shrink-0" id="sensor-dot"></span>
     </div>
     <div class="flex items-center gap-2 shrink-0">
       <span id="current-date" class="text-xs hidden lg:inline">--</span>
@@ -314,18 +323,41 @@
 
         <!-- KPI CARDS -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 md:p-6 pb-2">
-          <div class="glass-card p-4">
-            <p class="text-xs uppercase font-semibold" style="color:var(--text-muted)">Danger Probability (Fusi)</p>
-            <p id="kpi-prob" class="text-2xl font-black mt-1">0%</p>
+          <!-- Risiko Kebakaran -->
+          <div class="glass-card p-4 border-l-4 transition-all duration-500" id="kpi-prob-card" style="border-left-color:#10b981">
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs uppercase font-semibold tracking-wide" style="color:var(--text-muted)">Risiko Kebakaran</p>
+              <i id="kpi-prob-icon" class="ph ph-shield-check text-emerald-400 text-xl"></i>
+            </div>
+            <p id="kpi-prob" class="text-3xl font-black text-emerald-400 transition-colors duration-500">0%</p>
+            <div class="mt-2 h-1.5 rounded-full" style="background:var(--border)">
+              <div id="kpi-prob-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+            </div>
+            <p id="kpi-prob-label" class="text-[10px] mt-1.5 font-medium text-emerald-600">Kondisi Normal</p>
           </div>
+          <!-- Kamera Aktif -->
           <div class="glass-card p-4">
-            <p class="text-xs uppercase font-semibold" style="color:var(--text-muted)">Active Cameras</p>
-            <p id="kpi-cams" class="text-2xl font-black mt-1">0 Online</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs uppercase font-semibold tracking-wide" style="color:var(--text-muted)">Kamera Aktif</p>
+              <i class="ph ph-video-camera text-blue-400 text-xl"></i>
+            </div>
+            <p id="kpi-cams" class="text-3xl font-black text-blue-400 mt-1">0 Online</p>
+            <div class="mt-2 h-1.5 rounded-full" style="background:var(--border)">
+              <div id="kpi-cams-bar" class="h-full rounded-full bg-blue-500 transition-all duration-500" style="width:100%"></div>
+            </div>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-muted)">Kamera online & streaming</p>
           </div>
+          <!-- Update Terakhir -->
           <div class="glass-card p-4">
-            <p class="text-xs uppercase font-semibold" style="color:var(--text-muted)">Data Staleness</p>
-            <p id="kpi-update" class="text-2xl font-black mt-1">0s ago</p>
-            <p class="text-[10px] mt-1" style="color:var(--text-muted)">Waktu sejak data terakhir diterima</p>
+            <div class="flex items-center justify-between mb-1">
+              <p class="text-xs uppercase font-semibold tracking-wide" style="color:var(--text-muted)">Update Terakhir</p>
+              <i id="kpi-update-icon" class="ph ph-clock text-zinc-400 text-xl"></i>
+            </div>
+            <p id="kpi-update" class="text-3xl font-black mt-1">0s</p>
+            <div class="mt-2 h-1.5 rounded-full" style="background:var(--border)">
+              <div id="kpi-update-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-1000" style="width:100%"></div>
+            </div>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-muted)">Detik sejak data sensor terakhir</p>
           </div>
         </div>
 
@@ -336,17 +368,28 @@
           <!-- Camera Panel (left) -->
           <div class="col-span-1 md:col-span-5 lg:col-span-8 flex flex-col gap-4">
             <div class="glass-card p-3 flex flex-col relative">
-              <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center justify-between mb-2 gap-2">
                 <select id="camera-select" onchange="switchCamera(this.value)" class="field-input" style="width:auto">
                   <option>Pilih Kamera...</option>
                 </select>
-                <button onclick="manualCapture()"
-                  class="bg-indigo-600 hover:bg-indigo-500  px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition shrink-0">
-                  <i class="ph ph-camera"></i> Capture
-                </button>
+                <div class="flex items-center gap-2 shrink-0">
+                  <!-- Camera size toggle -->
+                  <div class="flex rounded overflow-hidden border border-zinc-700 text-xs font-bold">
+                    <button type="button" id="cam-size-s"
+                      class="px-2.5 py-1.5 bg-indigo-600 text-white transition cursor-pointer" title="Kecil">S</button>
+                    <button type="button" id="cam-size-m"
+                      class="px-2.5 py-1.5 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition cursor-pointer" title="Sedang">M</button>
+                    <button type="button" id="cam-size-l"
+                      class="px-2.5 py-1.5 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition cursor-pointer" title="Besar">L</button>
+                  </div>
+                  <button onclick="manualCapture()"
+                    class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition">
+                    <i class="ph ph-camera"></i> Capture
+                  </button>
+                </div>
               </div>
-              <div class="relative bg-black rounded-lg overflow-hidden border border-zinc-800"
-                style="min-height:16rem; flex:1">
+              <div id="camera-viewport" class="relative bg-black rounded-lg overflow-hidden border border-zinc-800"
+                style="min-height:16rem; flex:1; transition: min-height 0.3s ease">
                 <img id="camera-frame" class="w-full h-full object-cover hidden" alt="Live Stream">
                 <div id="camera-placeholder"
                   class="absolute inset-0 flex flex-col items-center justify-center text-zinc-500">
@@ -377,9 +420,20 @@
             </div>
 
             <!-- Fused Probability Chart -->
-            <div class="glass-card p-4" style="height:12rem">
-              <p class="text-xs font-semibold uppercase mb-2" style="color:var(--text-muted)">Probabilitas Bahaya —
-                Real-time</p>
+            <div class="glass-card p-4" style="height:14rem">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-xs font-semibold uppercase" style="color:var(--text-muted)">Probabilitas Bahaya — Real-time</p>
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-1">
+                    <div class="w-4 h-0 border-t-2 border-dashed border-yellow-500/70"></div>
+                    <span class="text-[9px] text-yellow-600">Waspada</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <div class="w-4 h-0 border-t-2 border-dashed border-red-500/70"></div>
+                    <span class="text-[9px] text-red-600">Bahaya</span>
+                  </div>
+                </div>
+              </div>
               <canvas id="fusionChart"></canvas>
             </div>
 
@@ -398,56 +452,163 @@
 
           <!-- Sensor Panel (right) -->
           <div class="col-span-1 md:col-span-3 lg:col-span-4 flex flex-col gap-4">
+
+            <!-- AI Model Scores -->
+            <div class="glass-card p-4">
+              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                <i class="ph ph-brain text-indigo-400"></i> Skor Model AI
+              </h3>
+              <div class="space-y-3">
+                <!-- YOLO -->
+                <div>
+                  <div class="flex justify-between items-center text-xs mb-1.5">
+                    <div>
+                      <span class="font-semibold">YOLO v8</span>
+                      <span class="text-[10px] ml-1.5 px-1.5 py-0.5 rounded" style="background:rgba(251,146,60,0.15);color:#fb923c" title="Deteksi objek berbasis deep learning dari kamera">Visual</span>
+                    </div>
+                    <span id="ai-yolo-val" class="font-mono text-orange-400 font-bold">0%</span>
+                  </div>
+                  <div class="h-2 rounded-full" style="background:var(--border)">
+                    <div id="ai-yolo-bar" class="h-full bg-orange-500 rounded-full transition-all duration-300" style="width:0%"></div>
+                  </div>
+                  <p class="text-[9px] mt-0.5" style="color:var(--text-muted)">Deteksi api & asap dari kamera</p>
+                </div>
+                <!-- XGBoost -->
+                <div>
+                  <div class="flex justify-between items-center text-xs mb-1.5">
+                    <div>
+                      <span class="font-semibold">XGBoost</span>
+                      <span class="text-[10px] ml-1.5 px-1.5 py-0.5 rounded" style="background:rgba(96,165,250,0.15);color:#60a5fa" title="Machine learning untuk klasifikasi data gas dan suhu">Sensor</span>
+                    </div>
+                    <span id="ai-xgboost-val" class="font-mono text-blue-400 font-bold">0%</span>
+                  </div>
+                  <div class="h-2 rounded-full" style="background:var(--border)">
+                    <div id="ai-xgboost-bar" class="h-full bg-blue-500 rounded-full transition-all duration-300" style="width:0%"></div>
+                  </div>
+                  <p class="text-[9px] mt-0.5" style="color:var(--text-muted)">Klasifikasi data gas & suhu ESP32</p>
+                </div>
+                <!-- Fused Score -->
+                <div class="pt-2.5 border-t" style="border-color:var(--border)">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div>
+                      <p class="text-xs font-semibold">Skor Fusi Akhir</p>
+                      <p class="text-[9px]" style="color:var(--text-muted)">Gabungan tertimbang YOLO + Sensor</p>
+                    </div>
+                    <span id="ai-fusion-val" class="font-mono text-purple-400 font-black text-2xl">0%</span>
+                  </div>
+                  <div class="h-2.5 rounded-full" style="background:var(--border)">
+                    <div id="ai-fusion-bar" class="h-full bg-purple-500 rounded-full transition-all duration-300" style="width:0%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bug 1: IR Flame Sensor -->
+            <div class="glass-card p-4">
+              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+                <i class="ph ph-flame text-red-400"></i> IR Flame Sensor
+              </h3>
+              <div id="flame-card" class="flex items-center justify-between p-3 rounded-lg border bg-zinc-900/50 border-zinc-800 transition-all">
+                <div class="flex items-center gap-3">
+                  <div id="flame-icon" class="w-10 h-10 rounded-full flex items-center justify-center bg-zinc-800 text-zinc-500 text-xl transition-all">
+                    <i class="ph ph-flame-light"></i>
+                  </div>
+                  <div>
+                    <p id="flame-status" class="text-sm font-bold text-zinc-300">TIDAK ADA API</p>
+                    <p class="text-[10px] text-zinc-500">GPIO27 · IR Direct</p>
+                  </div>
+                </div>
+                <span id="flame-dot" class="w-3 h-3 rounded-full bg-zinc-600"></span>
+              </div>
+            </div>
+
             <!-- Temp/Humidity -->
             <div class="glass-card p-4">
               <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-                <i class="ph ph-thermometer text-orange-400"></i> Lingkungan
+                <i class="ph ph-thermometer text-orange-400"></i> Kondisi Lingkungan
               </h3>
               <div class="grid grid-cols-2 gap-3">
-                <div class="sensor-sub text-center">
-                  <p class="text-xs" style="color:var(--text-muted)">SUHU (DHT22)</p>
-                  <p id="sensor-temp" class="text-xl font-mono font-bold mt-1">0.0°C</p>
+                <div class="sensor-sub p-3">
+                  <p class="text-[10px] font-semibold uppercase tracking-wide" style="color:var(--text-muted)">Suhu (DHT22)</p>
+                  <p id="sensor-temp" class="text-2xl font-mono font-bold mt-1 text-orange-400 transition-colors duration-300">0.0°C</p>
+                  <p id="temp-comfort" class="text-[10px] mt-0.5 text-zinc-500">Mengukur...</p>
+                  <div class="h-1.5 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="temp-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:50%"></div>
+                  </div>
+                  <div class="flex justify-between text-[8px] mt-0.5" style="color:var(--text-muted)">
+                    <span>Dingin</span><span>Panas</span>
+                  </div>
                 </div>
-                <div class="sensor-sub text-center">
-                  <p class="text-xs" style="color:var(--text-muted)">KELEMBAPAN</p>
-                  <p id="sensor-humid" class="text-xl font-mono font-bold mt-1">0.0%</p>
+                <div class="sensor-sub p-3">
+                  <p class="text-[10px] font-semibold uppercase tracking-wide" style="color:var(--text-muted)">Kelembapan</p>
+                  <p id="sensor-humid" class="text-2xl font-mono font-bold mt-1 text-blue-400 transition-colors duration-300">0.0%</p>
+                  <p id="humid-comfort" class="text-[10px] mt-0.5 text-zinc-500">Mengukur...</p>
+                  <div class="h-1.5 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="humid-bar" class="h-full rounded-full bg-blue-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                  <div class="flex justify-between text-[8px] mt-0.5" style="color:var(--text-muted)">
+                    <span>Kering</span><span>Lembap</span>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Gas Classification -->
             <div class="glass-card p-4">
-              <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+              <h3 class="text-sm font-semibold mb-2 flex items-center gap-2">
                 <i class="ph ph-gas-pump text-blue-400"></i> Klasifikasi Gas
               </h3>
-              <div id="gas-badge-container" class="mb-3"></div>
-              <div class="space-y-2">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-[10px] font-semibold" style="color:var(--text-muted)">Terdeteksi:</span>
+                <div id="gas-badge-container" class="flex-1"></div>
+              </div>
+              <div class="space-y-2.5">
                 <div>
-                  <div class="flex justify-between text-xs" style="color:var(--text-muted)"><span>Clean</span><span
-                      id="cls-clean">0%</span></div>
-                  <div class="h-1.5 rounded mt-1" style="background:var(--border)">
-                    <div id="bar-clean" class="h-full bg-emerald-500 rounded transition-all" style="width:0%"></div>
+                  <div class="flex justify-between items-center text-xs mb-1">
+                    <div class="flex items-center gap-1.5">
+                      <i class="ph ph-leaf text-emerald-400 text-sm"></i>
+                      <span style="color:var(--text-muted)">Bersih (Clean)</span>
+                    </div>
+                    <span id="cls-clean" class="font-mono text-emerald-400 font-bold">0%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full" style="background:var(--border)">
+                    <div id="bar-clean" class="h-full bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
                   </div>
                 </div>
                 <div>
-                  <div class="flex justify-between text-xs" style="color:var(--text-muted)"><span>Smoke</span><span
-                      id="cls-smoke">0%</span></div>
-                  <div class="h-1.5 rounded mt-1" style="background:var(--border)">
-                    <div id="bar-smoke" class="h-full bg-orange-500 rounded transition-all" style="width:0%"></div>
+                  <div class="flex justify-between items-center text-xs mb-1">
+                    <div class="flex items-center gap-1.5">
+                      <i class="ph ph-cloud-fog text-orange-400 text-sm"></i>
+                      <span style="color:var(--text-muted)">Asap (Smoke)</span>
+                    </div>
+                    <span id="cls-smoke" class="font-mono text-orange-400 font-bold">0%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full" style="background:var(--border)">
+                    <div id="bar-smoke" class="h-full bg-orange-500 rounded-full transition-all" style="width:0%"></div>
                   </div>
                 </div>
                 <div>
-                  <div class="flex justify-between text-xs" style="color:var(--text-muted)"><span>Gasoline</span><span
-                      id="cls-gasoline">0%</span></div>
-                  <div class="h-1.5 rounded mt-1" style="background:var(--border)">
-                    <div id="bar-gasoline" class="h-full bg-red-500 rounded transition-all" style="width:0%"></div>
+                  <div class="flex justify-between items-center text-xs mb-1">
+                    <div class="flex items-center gap-1.5">
+                      <i class="ph ph-drop text-red-400 text-sm"></i>
+                      <span style="color:var(--text-muted)">Bensin (Gasoline)</span>
+                    </div>
+                    <span id="cls-gasoline" class="font-mono text-red-400 font-bold">0%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full" style="background:var(--border)">
+                    <div id="bar-gasoline" class="h-full bg-red-500 rounded-full transition-all" style="width:0%"></div>
                   </div>
                 </div>
                 <div>
-                  <div class="flex justify-between text-xs" style="color:var(--text-muted)"><span>Mixture</span><span
-                      id="cls-mixture">0%</span></div>
-                  <div class="h-1.5 rounded mt-1" style="background:var(--border)">
-                    <div id="bar-mixture" class="h-full bg-yellow-500 rounded transition-all" style="width:0%"></div>
+                  <div class="flex justify-between items-center text-xs mb-1">
+                    <div class="flex items-center gap-1.5">
+                      <i class="ph ph-arrows-merge text-yellow-400 text-sm"></i>
+                      <span style="color:var(--text-muted)">Campuran (Mixture)</span>
+                    </div>
+                    <span id="cls-mixture" class="font-mono text-yellow-400 font-bold">0%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full" style="background:var(--border)">
+                    <div id="bar-mixture" class="h-full bg-yellow-500 rounded-full transition-all" style="width:0%"></div>
                   </div>
                 </div>
               </div>
@@ -456,21 +617,81 @@
             <!-- MQ Sensors -->
             <div class="glass-card p-4">
               <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-                <i class="ph ph-cpu text-purple-400"></i> Sensor MQ (PPM)
+                <i class="ph ph-cpu text-purple-400"></i> Sensor Gas MQ
               </h3>
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="sensor-sub">MQ-135: <span id="sensor-mq135" class="font-mono">0</span><span
-                    class="threshold-indicator bg-emerald-500 block"></span></div>
-                <div class="sensor-sub">MQ-2: <span id="sensor-mq2" class="font-mono">0</span><span
-                    class="threshold-indicator bg-emerald-500 block"></span></div>
-                <div class="sensor-sub">MQ-7: <span id="sensor-mq7-detail" class="font-mono">0</span><span
-                    class="threshold-indicator bg-emerald-500 block"></span></div>
-                <div class="sensor-sub">MQ-4: <span id="sensor-mq4" class="font-mono">0</span><span
-                    class="threshold-indicator bg-emerald-500 block"></span></div>
-                <div class="sensor-sub">MQ-5: <span id="sensor-mq5" class="font-mono">0</span><span
-                    class="threshold-indicator bg-emerald-500 block"></span></div>
-                <div class="sensor-sub">MQ-3: <span id="sensor-mq3" class="font-mono">0</span><span
-                    class="threshold-indicator bg-emerald-500 block"></span></div>
+              <div class="space-y-2">
+                <div class="sensor-sub px-3 py-2">
+                  <div class="flex items-center justify-between">
+                    <div><span class="text-xs font-bold">MQ-135</span> <span class="text-[10px] text-zinc-500">CO₂/Kualitas Udara</span></div>
+                    <div class="flex items-center gap-2">
+                      <span id="mq135-status" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">AMAN</span>
+                      <span><span id="sensor-mq135" class="font-mono text-sm font-bold text-emerald-400">0</span><span class="text-[9px] text-zinc-500"> ppm</span></span>
+                    </div>
+                  </div>
+                  <div class="h-1 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="mq135-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="sensor-sub px-3 py-2">
+                  <div class="flex items-center justify-between">
+                    <div><span class="text-xs font-bold">MQ-2</span> <span class="text-[10px] text-zinc-500">Asap/LPG</span></div>
+                    <div class="flex items-center gap-2">
+                      <span id="mq2-status" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">AMAN</span>
+                      <span><span id="sensor-mq2" class="font-mono text-sm font-bold text-emerald-400">0</span><span class="text-[9px] text-zinc-500"> ppm</span></span>
+                    </div>
+                  </div>
+                  <div class="h-1 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="mq2-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="sensor-sub px-3 py-2">
+                  <div class="flex items-center justify-between">
+                    <div><span class="text-xs font-bold">MQ-7</span> <span class="text-[10px] text-zinc-500">CO (Karbon Monoksida)</span></div>
+                    <div class="flex items-center gap-2">
+                      <span id="mq7-status" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">AMAN</span>
+                      <span><span id="sensor-mq7-detail" class="font-mono text-sm font-bold text-emerald-400">0</span><span class="text-[9px] text-zinc-500"> ppm</span></span>
+                    </div>
+                  </div>
+                  <div class="h-1 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="mq7-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="sensor-sub px-3 py-2">
+                  <div class="flex items-center justify-between">
+                    <div><span class="text-xs font-bold">MQ-4</span> <span class="text-[10px] text-zinc-500">Metana/Gas Alam</span></div>
+                    <div class="flex items-center gap-2">
+                      <span id="mq4-status" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">AMAN</span>
+                      <span><span id="sensor-mq4" class="font-mono text-sm font-bold text-emerald-400">0</span><span class="text-[9px] text-zinc-500"> ppm</span></span>
+                    </div>
+                  </div>
+                  <div class="h-1 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="mq4-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="sensor-sub px-3 py-2">
+                  <div class="flex items-center justify-between">
+                    <div><span class="text-xs font-bold">MQ-5</span> <span class="text-[10px] text-zinc-500">LPG/Gas Kota</span></div>
+                    <div class="flex items-center gap-2">
+                      <span id="mq5-status" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">AMAN</span>
+                      <span><span id="sensor-mq5" class="font-mono text-sm font-bold text-emerald-400">0</span><span class="text-[9px] text-zinc-500"> ppm</span></span>
+                    </div>
+                  </div>
+                  <div class="h-1 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="mq5-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                </div>
+                <div class="sensor-sub px-3 py-2">
+                  <div class="flex items-center justify-between">
+                    <div><span class="text-xs font-bold">MQ-3</span> <span class="text-[10px] text-zinc-500">Alkohol/Bensin</span></div>
+                    <div class="flex items-center gap-2">
+                      <span id="mq3-status" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400">AMAN</span>
+                      <span><span id="sensor-mq3" class="font-mono text-sm font-bold text-emerald-400">0</span><span class="text-[9px] text-zinc-500"> ppm</span></span>
+                    </div>
+                  </div>
+                  <div class="h-1 rounded-full mt-1.5" style="background:var(--border)">
+                    <div id="mq3-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

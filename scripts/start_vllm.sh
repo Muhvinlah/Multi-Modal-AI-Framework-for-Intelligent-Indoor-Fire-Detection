@@ -7,7 +7,7 @@
 #   prefix → request ke-2 dan seterusnya jauh lebih cepat.
 set -e
 
-AWQ_MODEL="./models/qwen2.5-3b-base-awq"
+AWQ_MODEL="./models/qwen2.5-3b-instruct-awq"
 
 if [ ! -d "$AWQ_MODEL" ] || [ -z "$(ls -A $AWQ_MODEL 2>/dev/null)" ]; then
     echo "ERROR: AWQ model tidak ditemukan di $AWQ_MODEL"
@@ -29,8 +29,7 @@ vllm serve "$AWQ_MODEL" \
     --port 8002 \
     --quantization awq \
     --dtype float16 \
-    --max-model-len 2048 \
-    --gpu-memory-utilization 0.45 \
-    --max-num-seqs 4 \
-    --enable-prefix-caching \
+    --max-model-len 4096 \
+    --gpu-memory-utilization 0.50 \
+    --max-num-seqs 2 \
     --trust-remote-code

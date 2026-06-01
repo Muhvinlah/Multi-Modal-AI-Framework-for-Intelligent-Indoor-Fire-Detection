@@ -14,6 +14,7 @@ venv/
 env/
 ENV/
 venv_awq/
+venv_vllm/
 
 # ============================================================
 # PYTHON CACHE
@@ -37,17 +38,19 @@ models/train_sensor/.ipynb_checkpoints/
 *.gguf
 *.pt
 *.pth
+*.safetensors
 *.keras
 *.h5
 *.onnx
-models/*.pkl
+models/**/*.pkl
 models/bm25_index.pkl
 models/train_yolo/dataset/
 models/train_chatbot/dataset_100k.jsonl
 models/train_chatbot2/
-models/.cache/
+models/**/.cache/
 models/qwen2.5-3b-base-hf/
 models/qwen2.5-3b-base-awq/
+models/qwen2.5-3b-instruct-awq/
 
 # ============================================================
 # DATASET — regenerable / download terpisah
