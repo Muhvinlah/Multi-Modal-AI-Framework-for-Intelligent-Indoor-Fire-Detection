@@ -4,7 +4,7 @@
 #          Bener-bener stateless — vLLM sendiri yang handle batching & cache
 # ==============================================================================
 import asyncio
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, AsyncIterator
 from openai import AsyncOpenAI, APIError, APITimeoutError
 from chatbot_service.config import cfg
 
@@ -34,6 +34,16 @@ async def health_check() -> bool:
         return False
 
 
+def _safe_max_tokens(messages: List[Dict[str, str]], requested: int) -> int:
+    """Cap max_tokens so that estimated input + output stays within context window."""
+    # Rough token estimate: 3 chars ≈ 1 token for mixed Indonesian/English text,
+    # plus ~5 special tokens per message turn for role markers.
+    estimated_input = sum(len(m.get("content") or "") for m in messages) // 3
+    estimated_input += len(messages) * 5
+    headroom = cfg.model_max_context - estimated_input - 50  # 50-token safety margin
+    return max(64, min(requested, headroom))
+
+
 async def generate(
     messages: List[Dict[str, str]],
     max_tokens: int,
@@ -46,6 +56,7 @@ async def generate(
         APITimeoutError, APIError — caller WAJIB tangani.
     """
     client = get_client()
+    max_tokens = _safe_max_tokens(messages, max_tokens)
     try:
         resp = await client.chat.completions.create(
             model=cfg.model_name,
@@ -66,3 +77,27 @@ async def generate(
     except APIError as e:
         print(f"[LLM] vLLM API error: {e}")
         raise
+
+
+async def generate_stream(
+    messages: List[Dict[str, str]],
+    max_tokens: int,
+    temperature: Optional[float] = None,
+) -> AsyncIterator[str]:
+    """Streaming generate — yields tokens as they arrive from vLLM."""
+    client = get_client()
+    max_tokens = _safe_max_tokens(messages, max_tokens)
+    stream = await client.chat.completions.create(
+        model=cfg.model_name,
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=temperature if temperature is not None else cfg.temperature,
+        top_p=cfg.top_p,
+        presence_penalty=cfg.presence_penalty,
+        stream=True,
+    )
+    async for chunk in stream:
+        if chunk.choices and chunk.choices[0].delta.content:
+            token = chunk.choices[0].delta.content.replace('\x00', '')
+            if token:
+                yield token

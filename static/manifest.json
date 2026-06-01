@@ -1,0 +1,29 @@
+{
+  "name": "Sistem Deteksi Kebakaran",
+  "short_name": "Fire Detection",
+  "description": "Multi-Modal AI Framework for Intelligent Indoor Fire Detection — PBL Politeknik Negeri Jakarta",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1c1c1e",
+  "theme_color": "#ef4444",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

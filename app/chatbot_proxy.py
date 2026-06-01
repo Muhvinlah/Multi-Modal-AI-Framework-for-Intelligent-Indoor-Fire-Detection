@@ -5,11 +5,13 @@
 #          timeout, jadi dashboard tetap responsif.
 # Caller : main.py (router include)
 # ==============================================================================
+import json
 import os
 import time
 import logging
 import httpx
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 
@@ -67,6 +69,17 @@ def _get_client() -> httpx.AsyncClient:
     return _client
 
 
+# Fields that SensorContext in chatbot_service accepts — everything else is stripped
+_SENSOR_SCHEMA_FIELDS = {
+    "camera_id", "mq2", "mq4", "mq5", "mq7", "mq135",
+    "temperature", "humidity", "flame_detected", "lstm_score",
+}
+
+
+def _filter_sensor_context(raw: Dict) -> Dict:
+    return {k: v for k, v in raw.items() if k in _SENSOR_SCHEMA_FIELDS}
+
+
 class ChatProxyRequest(BaseModel):
     pertanyaan: str
     history: Optional[List[Dict[str, str]]] = None
@@ -93,17 +106,9 @@ async def chat_proxy(req: ChatProxyRequest):
             detail="Chatbot sedang offline. Dashboard tetap berjalan normal — coba lagi sebentar.",
         )
 
-    # Strip frontend-only sensor fields that are not part of SensorContext schema
-    _SENSOR_SCHEMA_FIELDS = {
-        "camera_id", "mq2", "mq4", "mq5", "mq7", "mq135",
-        "temperature", "humidity", "flame_detected",
-    }
     payload = req.model_dump()
     if payload.get("sensor_context") is not None:
-        payload["sensor_context"] = {
-            k: v for k, v in payload["sensor_context"].items()
-            if k in _SENSOR_SCHEMA_FIELDS
-        }
+        payload["sensor_context"] = _filter_sensor_context(payload["sensor_context"])
 
     try:
         resp = await _get_client().post("/api/chat", json=payload)
@@ -122,3 +127,45 @@ async def chat_proxy(req: ChatProxyRequest):
     except httpx.RequestError as e:
         breaker.record_failure()
         raise HTTPException(503, f"Chatbot unreachable: {e}")
+
+
+@router.post("/api/chat/stream")
+async def chat_stream_proxy(req: ChatProxyRequest):
+    """SSE streaming proxy to chatbot_service — mirrors /api/chat/stream on port 8001."""
+    if not breaker.allow():
+        async def _open_error():
+            yield f"data: {json.dumps({'error': 'Chatbot sedang offline. Coba lagi sebentar.'})}\n\n"
+        return StreamingResponse(
+            _open_error(),
+            media_type="text/event-stream",
+            headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+        )
+
+    payload = req.model_dump()
+    if payload.get("sensor_context") is not None:
+        payload["sensor_context"] = _filter_sensor_context(payload["sensor_context"])
+
+    async def event_stream():
+        try:
+            async with _get_client().stream("POST", "/api/chat/stream", json=payload) as resp:
+                resp.raise_for_status()
+                breaker.record_success()
+                async for chunk in resp.aiter_bytes():
+                    yield chunk
+        except httpx.TimeoutException:
+            breaker.record_failure()
+            yield f"data: {json.dumps({'error': 'Chatbot terlalu lama merespons.'})}\n\n"
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code >= 500:
+                breaker.record_failure()
+            log.error("[ChatStreamProxy] chatbot_service %s", e.response.status_code)
+            yield f"data: {json.dumps({'error': f'Chatbot error {e.response.status_code}'})}\n\n"
+        except httpx.RequestError as e:
+            breaker.record_failure()
+            yield f"data: {json.dumps({'error': f'Chatbot unreachable: {e}'})}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

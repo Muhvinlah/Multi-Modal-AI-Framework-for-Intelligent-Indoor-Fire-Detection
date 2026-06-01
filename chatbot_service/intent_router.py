@@ -29,6 +29,13 @@ _TOOL_HINT_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
+# Report requests always need a tool call — no sensor context required
+_REPORT_PATTERNS = re.compile(
+    r"\b(laporan|buat\s*laporan|generate\s*report|cetak\s*laporan|"
+    r"unduh\s*laporan|download\s*laporan|ekspor|export|rekap|rekapitulasi)\b",
+    re.IGNORECASE,
+)
+
 # Topik yang jelas di luar domain K3 — ditangkap sebelum masuk LLM
 _OFF_TOPIC_PATTERNS = re.compile(
     r"\b(politik|presiden|gubernur|walikota|bupati|dprd?|partai|pilkada|pemilu|"
@@ -71,6 +78,8 @@ def classify_intent(message: str, has_sensor_context: bool = False) -> Intent:
     # Off-topic check: blocked topic keyword present AND no K3 keyword to rescue it
     if _OFF_TOPIC_PATTERNS.search(msg) and not _K3_DOMAIN_KEYWORDS.search(msg):
         return "out_of_domain"
+    if _REPORT_PATTERNS.search(msg):
+        return "tool_needed"
     if _TOOL_HINT_PATTERNS.search(msg) and has_sensor_context:
         return "tool_needed"
     return "rag_query"

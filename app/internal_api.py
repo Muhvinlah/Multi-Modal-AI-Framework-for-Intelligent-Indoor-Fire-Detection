@@ -57,6 +57,54 @@ async def alert_history(limit: int = 10):
         return {"alerts": [], "error": str(e)}
 
 
+@router.get("/generate-report", dependencies=[Depends(_verify)])
+async def generate_report(
+    report_type: str = "sensor",   # "sensor" | "incident"
+    camera_id: str = "all",
+    minutes: int = 60,
+    limit: int = 20,
+):
+    """Generate a DOCX report and return a single-use download URL."""
+    from datetime import datetime
+    from app.report_router import register_report
+    from app.docx_report import generate_sensor_report, generate_incident_report
+    from app.config import get_sensor_data
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M")
+
+    try:
+        if report_type == "sensor":
+            sensor_data = get_sensor_data()
+            docx_bytes = generate_sensor_report(sensor_data, camera_id)
+            filename = f"Status_Sensor_{ts}.docx"
+
+        elif report_type == "incident":
+            try:
+                from app.notification import get_recent_alerts
+                alerts = get_recent_alerts(limit)
+            except Exception:
+                alerts = []
+
+            try:
+                from app.lstm_anomaly import query_score_history
+                cam = camera_id if camera_id != "all" else "cam_01"
+                lstm_hist = {"history": query_score_history(cam, minutes)}
+            except Exception:
+                lstm_hist = {"history": []}
+
+            docx_bytes = generate_incident_report(alerts, lstm_hist, camera_id)
+            filename = f"Laporan_Insiden_{ts}.docx"
+
+        else:
+            return {"ok": False, "error": f"report_type tidak dikenal: {report_type}. Gunakan 'sensor' atau 'incident'."}
+
+        token, download_url = register_report(docx_bytes, filename)
+        return {"ok": True, "token": token, "download_url": download_url, "filename": filename, "report_type": report_type}
+
+    except Exception as e:
+        return {"ok": False, "error": f"Gagal generate laporan: {e}"}
+
+
 @router.get("/rag-retrieve", dependencies=[Depends(_verify)])
 async def rag_retrieve(query: str):
     """Sprint 1: delegate ke app.rag_engine yang sudah ada di dashboard."""

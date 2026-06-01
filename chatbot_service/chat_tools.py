@@ -44,34 +44,56 @@ TOOLS_SCHEMA = [
         "endpoint": "/api/internal/alert-history",
         "params": {"limit": "int"},
     },
+    {
+        "name": "generate_report",
+        "endpoint": "/api/internal/generate-report",
+        "params": {"report_type": "string (sensor|incident)", "camera_id": "string?", "minutes": "int?", "limit": "int?"},
+    },
 ]
 
 
 def get_tools_prompt() -> str:
-    lines = [
-        "TOOLS YANG TERSEDIA (kalau butuh data real-time, balas SATU baris):",
-        'TOOL_CALL: {"tool":"<nama>","args":{...}}',
-        "",
-    ]
+    tool_lines = []
     for t in TOOLS_SCHEMA:
         params = ", ".join(f"{k}={v}" for k, v in t["params"].items()) or "(no args)"
-        lines.append(f"- {t['name']}({params})")
-    return "\n".join(lines)
+        tool_lines.append(f"  - {t['name']}({params})")
+    tools_str = "\n".join(tool_lines)
+    return (
+        "TOOL SELECTOR — ATURAN MUTLAK:\n"
+        "Balas dengan TEPAT SATU baris berikut. Tidak boleh ada teks lain.\n"
+        "Tidak ada penjelasan. Tidak ada laporan. Hanya satu baris ini:\n\n"
+        'TOOL_CALL: {"tool":"<nama_tool>","args":{...}}\n\n'
+        f"Tool tersedia:\n{tools_str}\n\n"
+        "CATATAN generate_report: tool ini mengambil semua data secara INTERNAL — "
+        "jangan panggil query_alert_history atau tool lain sebelumnya."
+    )
 
-
-_TOOL_PATTERN = re.compile(r'TOOL_CALL:\s*(\{.*\})', re.DOTALL)
 
 def parse_tool_call(text: str) -> Optional[Dict]:
-    m = _TOOL_PATTERN.search(text)
-    if not m:
-        return None
-    try:
-        data = json.loads(m.group(1))
-        if "tool" in data and "args" in data:
-            return data
-    except json.JSONDecodeError:
-        pass
-    return None
+    """Extract the last valid TOOL_CALL from text using balanced-brace matching.
+
+    Uses balanced-brace scanning instead of greedy regex so multiple TOOL_CALL
+    blocks in one response are all parsed; the last valid one is returned
+    (models tend to put their 'final' intent last).
+    """
+    last_valid: Optional[Dict] = None
+    for m in re.finditer(r'TOOL_CALL:\s*\{', text):
+        start = m.end() - 1  # position of opening '{'
+        depth = 0
+        for i, ch in enumerate(text[start:]):
+            if ch == '{':
+                depth += 1
+            elif ch == '}':
+                depth -= 1
+                if depth == 0:
+                    try:
+                        data = json.loads(text[start: start + i + 1])
+                        if 'tool' in data and 'args' in data:
+                            last_valid = data
+                    except json.JSONDecodeError:
+                        pass
+                    break
+    return last_valid
 
 
 async def dispatch(tool_name: str, args: Dict) -> Dict:

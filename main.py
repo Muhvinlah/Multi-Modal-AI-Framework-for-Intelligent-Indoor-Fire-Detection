@@ -123,6 +123,7 @@ from app.chatbot_proxy import router as chat_router
 from app.pdf_export import router as pdf_router
 from app.feedback import router as feedback_router
 from app.internal_api import router as internal_router
+from app.report_router import router as report_router
 
 app.include_router(auth_router)
 app.include_router(sensor_router)
@@ -131,3 +132,4 @@ app.include_router(chat_router)
 app.include_router(pdf_router)
 app.include_router(feedback_router)
 app.include_router(internal_router)
+app.include_router(report_router)
