@@ -38,6 +38,7 @@ models/train_sensor/.ipynb_checkpoints/
 *.gguf
 *.pt
 *.pth
+*.safetensors
 *.keras
 *.h5
 *.onnx
@@ -49,6 +50,7 @@ models/train_chatbot2/
 models/**/.cache/
 models/qwen2.5-3b-base-hf/
 models/qwen2.5-3b-base-awq/
+models/qwen2.5-3b-instruct-awq/
 
 # ============================================================
 # DATASET — regenerable / download terpisah
