@@ -421,22 +421,29 @@ function connectWebSocket() {
     let cam = cameras.find(c => c.cam_id === selectedCameraId) || cameras[0];
     if (!cam) return;
 
-    // Sensor connection badge — green when ESP32 data is arriving, grey otherwise
+    // Sensor connection badge — blue=ok, yellow=stale, grey=no data
     const hasSensor = cam.sensor_raw !== null && cam.sensor_raw !== undefined;
+    const sensorStale = cam.sensor_stale === true;
     if (ui.sensorStatus) {
-      if (hasSensor) {
+      if (hasSensor && !sensorStale) {
         ui.sensorStatus.textContent = 'ESP32 OK';
         ui.sensorStatus.className = 'hidden md:inline text-xs px-2 py-0.5 rounded bg-blue-500/20 border border-blue-500/50 text-blue-400 font-bold';
+      } else if (sensorStale) {
+        ui.sensorStatus.textContent = '⚠ SENSOR OFFLINE';
+        ui.sensorStatus.className = 'hidden md:inline text-xs px-2 py-0.5 rounded bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 font-bold';
       } else {
         ui.sensorStatus.textContent = 'SENSOR --';
         ui.sensorStatus.className = 'hidden md:inline text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400 font-bold';
       }
     }
-    // Bug 2: sync dot colour with sensor presence
     if (ui.sensorDot) {
-      ui.sensorDot.className = hasSensor
-        ? 'hidden md:inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0'
-        : 'hidden md:inline-block w-2 h-2 rounded-full bg-zinc-500 shrink-0';
+      if (hasSensor && !sensorStale) {
+        ui.sensorDot.className = 'hidden md:inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse shrink-0';
+      } else if (sensorStale) {
+        ui.sensorDot.className = 'hidden md:inline-block w-2 h-2 rounded-full bg-yellow-500 shrink-0';
+      } else {
+        ui.sensorDot.className = 'hidden md:inline-block w-2 h-2 rounded-full bg-zinc-500 shrink-0';
+      }
     }
 
     if (!selectedCameraId && cam) {
@@ -1117,21 +1124,41 @@ async function sendChatMessage() {
 }
 
 async function pollChatbotHealth() {
+  const indicator = document.getElementById('chatbot-indicator');
+  const label = document.getElementById('chatbot-status');
   try {
     const res = await fetch('/api/chat/health');
     const data = await res.json();
-    const indicator = document.getElementById('chatbot-indicator');
-    const label = document.getElementById('chatbot-status');
     if (indicator) {
-      indicator.classList.toggle('bg-green-400', data.available);
-      indicator.classList.toggle('bg-zinc-500', !data.available);
-      indicator.classList.toggle('opacity-50', !data.available);
+      indicator.className = indicator.className
+        .replace(/bg-\S+/g, '')
+        .trim();
+      if (data.available) {
+        indicator.classList.add('bg-green-400', 'animate-pulse');
+        indicator.classList.remove('bg-zinc-500', 'bg-yellow-400', 'opacity-50');
+      } else {
+        indicator.classList.add('bg-zinc-500', 'opacity-50');
+        indicator.classList.remove('bg-green-400', 'bg-yellow-400', 'animate-pulse');
+      }
     }
     if (label) label.textContent = data.available ? '● Online' : '● Offline';
   } catch {
-    const label = document.getElementById('chatbot-status');
+    if (indicator) {
+      indicator.classList.remove('bg-green-400', 'bg-yellow-400', 'animate-pulse');
+      indicator.classList.add('bg-zinc-500', 'opacity-50');
+    }
     if (label) label.textContent = '● Offline';
   }
+}
+
+function initChatbotHealthIndicator() {
+  const indicator = document.getElementById('chatbot-indicator');
+  const label = document.getElementById('chatbot-status');
+  if (indicator) {
+    indicator.classList.remove('bg-green-400', 'bg-zinc-500', 'animate-pulse');
+    indicator.classList.add('bg-yellow-400', 'animate-pulse');
+  }
+  if (label) label.textContent = '⟳ Loading...';
 }
 
 // Wire camera size buttons via addEventListener (more reliable than inline onclick)
@@ -1140,4 +1167,5 @@ async function pollChatbotHealth() {
   if (btn) btn.addEventListener('click', () => setCameraSize(size));
 });
 setInterval(pollChatbotHealth, 30000);
+initChatbotHealthIndicator();
 pollChatbotHealth();

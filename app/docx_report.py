@@ -11,6 +11,13 @@ from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
+from app.ai_engine import raw_adc_to_ppm
+
+
+def _get_ppm(d: dict, key: str) -> float:
+    raw = d.get(key, 0)
+    return raw_adc_to_ppm(key, raw) if raw > 0 else 0.0
+
 
 def _add_kv_table(doc: Document, rows: List[List[str]]) -> None:
     table = doc.add_table(rows=0, cols=2)
@@ -117,13 +124,13 @@ def generate_sensor_report(sensor_data: Dict, camera_id: str = "all") -> bytes:
     for cam_id, d in cameras_to_report.items():
         doc.add_heading(f"Kamera: {cam_id}", 2)
         _add_data_table(doc, ["Sensor", "Nilai", "Satuan", "Status"], [
-            ["MQ-2 (LPG/Asap)",         str(d.get("mq2", 0)),         "ppm", _gas_status(d.get("mq2", 0), 400)],
-            ["MQ-4 (Metana)",            str(d.get("mq4", 0)),         "ppm", _gas_status(d.get("mq4", 0), 300)],
-            ["MQ-5 (LPG/Gas Kota)",      str(d.get("mq5", 0)),         "ppm", _gas_status(d.get("mq5", 0), 300)],
-            ["MQ-7 (CO)",                str(d.get("mq7", 0)),         "ppm", _gas_status(d.get("mq7", 0), 150)],
-            ["MQ-135 (NH3/NOx/Benzena)", str(d.get("mq135", 0)),       "ppm", _gas_status(d.get("mq135", 0), 300)],
-            ["Suhu",                     str(d.get("temperature", 0)), "°C",  _temp_status(d.get("temperature", 0))],
-            ["Kelembapan",               str(d.get("humidity", 0)),    "% RH","Normal"],
+            ["MQ-2 (LPG/Asap)",         f"{_get_ppm(d, 'mq2'):.1f}",   "ppm", _gas_status(_get_ppm(d, 'mq2'),   300)],
+            ["MQ-4 (Metana)",            f"{_get_ppm(d, 'mq4'):.1f}",   "ppm", _gas_status(_get_ppm(d, 'mq4'),   1000)],
+            ["MQ-5 (LPG/Gas Kota)",      f"{_get_ppm(d, 'mq5'):.1f}",   "ppm", _gas_status(_get_ppm(d, 'mq5'),   1000)],
+            ["MQ-7 (CO)",                f"{_get_ppm(d, 'mq7'):.1f}",   "ppm", _gas_status(_get_ppm(d, 'mq7'),   50)],
+            ["MQ-135 (NH3/NOx/Benzena)", f"{_get_ppm(d, 'mq135'):.1f}", "ppm", _gas_status(_get_ppm(d, 'mq135'), 200)],
+            ["Suhu",                     str(d.get("temperature", 0)),   "°C",  _temp_status(d.get("temperature", 0))],
+            ["Kelembapan",               str(d.get("humidity", 0)),      "% RH","Normal"],
         ])
         doc.add_paragraph()
         flame = d.get("flame_detected", False)

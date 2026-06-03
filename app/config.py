@@ -9,6 +9,7 @@
 
 import os
 import json
+import time
 import threading
 from dotenv import load_dotenv
 
@@ -166,7 +167,7 @@ def get_sensor_data(cam_id: str = None) -> dict:
 
 def update_sensor_data(cam_id: str, data: dict):
     with _config_lock:
-        _sensor_data[cam_id] = data
+        _sensor_data[cam_id] = {**data, "_updated_at": time.time()}
 
 
 # Load persisted pada import
