@@ -222,6 +222,7 @@ async def websocket_monitor(websocket: WebSocket):
                 # ── Sensor data ────────────────────────────────────────────
                 sensor = get_sensor_data(cam_id)
                 has_sensor = bool(sensor)
+                sensor_stale = has_sensor and (time.time() - sensor.get("_updated_at", 0)) > 10
 
                 # ── YOLO inference (rate limited, via yolo_pool) ───────────
                 yolo_interval = thresholds.get("yolo_interval", 3.0)
@@ -302,6 +303,7 @@ async def websocket_monitor(websocket: WebSocket):
                     "status": status,
                     "sensor_raw": sensor if has_sensor else None,
                     "sensor_ppm": ppm_display if has_sensor else None,
+                    "sensor_stale": sensor_stale,
                     "temperature": temperature,
                     "humidity": humidity,
                     "flame_detected": bool(sensor.get("flame_detected")) if has_sensor else False,

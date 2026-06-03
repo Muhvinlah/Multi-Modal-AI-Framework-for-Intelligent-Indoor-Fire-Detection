@@ -448,6 +448,29 @@
                 <p class="text-xs text-zinc-500 italic py-2">Belum ada event.</p>
               </div>
             </div>
+
+            <!-- Remote Camera Feed -->
+            <div class="glass-card p-3">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-xs font-semibold uppercase flex items-center gap-1.5" style="color:var(--text-muted)">
+                  <i class="ph ph-broadcast text-red-400"></i> Kamera Remote
+                </p>
+                <span id="cameraStatus" class="text-[10px] px-2 py-0.5 rounded-full" style="background:rgba(113,113,122,0.2);color:var(--text-muted)">Menunggu koneksi kamera...</span>
+              </div>
+              <div class="relative bg-black rounded-lg overflow-hidden border border-zinc-800" style="min-height:12rem">
+                <img
+                  id="remoteCameraFeed"
+                  src="/api/camera-stream"
+                  alt="Live Camera Feed"
+                  class="w-full h-full object-cover"
+                  onerror="this.src='/static/no-signal.png'; setTimeout(() => this.src='/api/camera-stream', 3000)"
+                />
+                <div class="absolute top-2 left-2 bg-red-600/90 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                  REMOTE
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Sensor Panel (right) -->
@@ -924,6 +947,23 @@
   </div>
 
   <script src="/static/js/dashboard.js"></script>
+  <script>
+    (function () {
+      const feed = document.getElementById('remoteCameraFeed');
+      const status = document.getElementById('cameraStatus');
+      if (!feed || !status) return;
+      feed.onload = () => {
+        status.textContent = 'Kamera terhubung';
+        status.style.background = 'rgba(16,185,129,0.15)';
+        status.style.color = '#10b981';
+      };
+      feed.onerror = () => {
+        status.textContent = 'Kamera tidak terhubung';
+        status.style.background = 'rgba(239,68,68,0.15)';
+        status.style.color = '#ef4444';
+      };
+    })();
+  </script>
 </body>
 
 </html>
