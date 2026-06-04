@@ -4,10 +4,16 @@
 // Dependensi   : Chart.js, html2canvas, jsPDF (CDN)
 // ==============================================================================
 
-// --- 1. View Switching (Replaces Tabs) ---
+// --- 1. View Switching ---
 function switchView(viewId) {
   // Hide all view sections
   document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+
+  // Show/hide KPI section (only in drill-down views)
+  const kpiSection = document.getElementById('kpi-section');
+  if (kpiSection) {
+    kpiSection.style.display = (viewId === 'dashboard') ? 'grid' : 'none';
+  }
 
   // Reset desktop sidebar nav links
   document.querySelectorAll('.nav-link').forEach(el => {
@@ -37,7 +43,200 @@ function switchView(viewId) {
   if (viewId === 'events') { filterLogs(); }
 }
 
-// ── Theme toggle ──────────────────────────────────────────
+// --- 1b. Drill-Down from Home grid into a specific room ---
+let _alertRoomId = null;  // camera id of the current cross-room alert
+
+function drillDown(camId) {
+  selectedCameraId = camId;
+  switchCamera(camId);
+  switchView('dashboard');
+  // Update room label in the back-button row
+  const lbl = document.getElementById('drilldown-room-label');
+  if (lbl) lbl.textContent = '';
+}
+
+function jumpToAlertRoom() {
+  if (_alertRoomId) drillDown(_alertRoomId);
+}
+
+// --- 1c. Update Building Overview room grid ---
+function updateRoomGrid(cameras) {
+  const grid = document.getElementById('room-grid');
+  if (!grid) return;
+
+  // Remove placeholder once we have data
+  const ph = document.getElementById('room-grid-placeholder');
+  if (ph && cameras.length > 0) ph.remove();
+
+  let safe = 0, warn = 0, danger = 0;
+
+  cameras.forEach(cam => {
+    const statusLower = (cam.status || 'Aman').toLowerCase();
+    if (statusLower === 'aman')         safe++;
+    else if (statusLower === 'waspada') warn++;
+    else if (statusLower === 'bahaya')  danger++;
+
+    // Status color/text mapping
+    const STATUS_MAP = {
+      'aman':    { bg: 'rgba(16,185,129,0.15)', color: '#10b981', border: '#10b981', label: 'AMAN',    icon: 'ph-shield-check' },
+      'waspada': { bg: 'rgba(245,158,11,0.15)',  color: '#f59e0b', border: '#f59e0b', label: 'WASPADA', icon: 'ph-warning' },
+      'bahaya':  { bg: 'rgba(239,68,68,0.2)',    color: '#ef4444', border: '#ef4444', label: 'BAHAYA',  icon: 'ph-fire' },
+    };
+    const s = STATUS_MAP[statusLower] || STATUS_MAP['aman'];
+
+    const hasEsp = cam.sensor_raw !== null && cam.sensor_raw !== undefined;
+    const isStale = cam.sensor_stale === true;
+    const espColor  = (!hasEsp) ? '#71717a' : isStale ? '#f59e0b' : '#10b981';
+    const espLabel  = (!hasEsp) ? 'No ESP32' : isStale ? 'Offline' : 'Online';
+
+    const temp = (cam.temperature ?? 0).toFixed(1);
+    const hum  = (cam.humidity  ?? 0).toFixed(1);
+    const prob = cam.prob_akhir ?? 0;
+    const gasClass = cam.detected_class || 'Clean';
+
+    let card = document.getElementById(`room-card-${cam.cam_id}`);
+    if (!card) {
+      // ── First render: build the full card HTML once ──
+      card = document.createElement('div');
+      card.id = `room-card-${cam.cam_id}`;
+      card.className = `room-card ${statusLower}`;
+      card.onclick = () => drillDown(cam.cam_id);
+      card.innerHTML = `
+        <img class="thumb room-snap" id="snap-${cam.cam_id}" alt="${cam.cam_name}"
+             style="background:#09090b; min-height:8rem; width:100%; height:8rem; object-fit:cover; display:block;">
+        <div style="padding:0.875rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+            <p style="font-size:0.875rem; font-weight:700; color:var(--text-primary); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:65%;">${cam.cam_name || cam.cam_id}</p>
+            <span id="rc-badge-${cam.cam_id}" style="display:inline-flex; align-items:center; gap:0.25rem; font-size:0.6rem; font-weight:800;
+                         background:${s.bg}; color:${s.color}; border:1px solid ${s.border};
+                         padding:0.2rem 0.5rem; border-radius:9999px;">
+              <i class="ph ${s.icon}"></i> ${s.label}
+            </span>
+          </div>
+
+          <div style="margin-bottom:0.625rem;">
+            <div style="display:flex; justify-content:space-between; font-size:0.65rem; margin-bottom:0.2rem; color:var(--text-muted);">
+              <span>Risiko Bahaya</span><span id="rc-prob-${cam.cam_id}" style="font-weight:700; color:${s.color};">${prob}%</span>
+            </div>
+            <div style="height:4px; border-radius:2px; background:var(--border);">
+              <div id="rc-bar-${cam.cam_id}" style="height:100%; border-radius:2px; background:${s.color}; width:${Math.min(prob,100)}%; transition:width 0.5s ease;"></div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; font-size:0.6rem; color:var(--text-muted);">
+            <span style="display:flex; align-items:center; gap:0.25rem;">
+              <i class="ph ph-thermometer"></i> <span id="rc-temp-${cam.cam_id}">${temp}°C</span>
+            </span>
+            <span style="display:flex; align-items:center; gap:0.25rem;">
+              <i class="ph ph-drop"></i> <span id="rc-hum-${cam.cam_id}">${hum}%</span>
+            </span>
+            <span style="display:flex; align-items:center; gap:0.25rem;">
+              <span id="rc-esp-dot-${cam.cam_id}" style="width:6px; height:6px; border-radius:50%; background:${espColor}; display:inline-block;"></span>
+              ESP32 <span id="rc-esp-lbl-${cam.cam_id}">${espLabel}</span>
+            </span>
+          </div>
+          <div style="margin-top:0.375rem; font-size:0.6rem; color:var(--text-muted);">
+            <i class="ph ph-gas-pump"></i> Gas: <strong id="rc-gas-${cam.cam_id}" style="color:var(--text-primary);">${gasClass}</strong>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    } else {
+      // ── Subsequent renders: patch only the changed elements (no innerHTML rebuild) ──
+      card.classList.remove('aman', 'waspada', 'bahaya');
+      card.classList.add(statusLower);
+
+      const badge = document.getElementById(`rc-badge-${cam.cam_id}`);
+      if (badge) {
+        badge.style.background = s.bg; badge.style.color = s.color; badge.style.border = `1px solid ${s.border}`;
+        badge.innerHTML = `<i class="ph ${s.icon}"></i> ${s.label}`;
+      }
+      const probEl = document.getElementById(`rc-prob-${cam.cam_id}`);
+      if (probEl) { probEl.textContent = prob + '%'; probEl.style.color = s.color; }
+      const barEl  = document.getElementById(`rc-bar-${cam.cam_id}`);
+      if (barEl)  { barEl.style.width = Math.min(prob, 100) + '%'; barEl.style.background = s.color; }
+      const tempEl = document.getElementById(`rc-temp-${cam.cam_id}`);
+      if (tempEl) tempEl.textContent = temp + '\u00b0C';
+      const humEl  = document.getElementById(`rc-hum-${cam.cam_id}`);
+      if (humEl)  humEl.textContent = hum + '%';
+      const dotEl  = document.getElementById(`rc-esp-dot-${cam.cam_id}`);
+      if (dotEl)  dotEl.style.background = espColor;
+      const lblEl  = document.getElementById(`rc-esp-lbl-${cam.cam_id}`);
+      if (lblEl)  lblEl.textContent = espLabel;
+      const gasEl  = document.getElementById(`rc-gas-${cam.cam_id}`);
+      if (gasEl)  gasEl.textContent = gasClass;
+    }
+  });
+
+  // Update building summary pills
+  const safeEl   = document.getElementById('bld-safe-count');
+  const warnEl   = document.getElementById('bld-warn-count');
+  const dangerEl = document.getElementById('bld-danger-count');
+  if (safeEl)   safeEl.textContent   = safe;
+  if (warnEl)   warnEl.textContent   = warn;
+  if (dangerEl) dangerEl.textContent = danger;
+}
+
+// ── Lazy snapshot refresh: 15s interval, only when Home view is visible ──
+const SNAP_INTERVAL_MS = 15_000;
+let _snapTimer = null;
+
+function _refreshSnapshots(camIds) {
+  const homeView = document.getElementById('view-home');
+  if (!homeView || !homeView.classList.contains('active')) return;
+  camIds.forEach(id => {
+    const img = document.getElementById(`snap-${id}`);
+    if (img) img.src = `/snapshot/${id}?t=${Date.now()}`;
+  });
+}
+
+function startSnapTimer(cameras) {
+  const ids = cameras.map(c => c.cam_id);
+  if (_snapTimer) clearInterval(_snapTimer);
+  _refreshSnapshots(ids);
+  _snapTimer = setInterval(() => _refreshSnapshots(ids), SNAP_INTERVAL_MS);
+}
+
+// --- 1d. Global cross-room alert in status bar ---
+function updateGlobalAlert(cameras, currentViewId) {
+  const banner   = document.getElementById('global-alert-banner');
+  const alertTxt = document.getElementById('global-alert-text');
+  if (!banner || !alertTxt) return;
+
+  // Find worst camera among all rooms
+  const bahayaCams  = cameras.filter(c => c.status === 'Bahaya');
+  const waspadaCams = cameras.filter(c => c.status === 'Waspada');
+
+  // Determine building-wide worst status
+  let worstStatus = 'Aman';
+  if (bahayaCams.length > 0)       worstStatus = 'Bahaya';
+  else if (waspadaCams.length > 0) worstStatus = 'Waspada';
+
+  // Update status bar bg class always
+  const theme = getStatusTheme(worstStatus);
+  const bar = ui.statusBar;
+  if (bar) {
+    bar.className = bar.className
+      .replace(/status-bar-\w+/g, '')
+      .trim() + ' ' + theme.bg;
+    ui.globalStatus.textContent = `STATUS: ${worstStatus.toUpperCase()}`;
+  }
+
+  // Show cross-room alert banner only when viewing a specific room AND another room has bahaya
+  const isInDrillDown = currentViewId === 'dashboard';
+  const alertCam = bahayaCams.find(c => c.cam_id !== selectedCameraId);
+
+  if (isInDrillDown && alertCam) {
+    _alertRoomId = alertCam.cam_id;
+    const gasInfo = alertCam.detected_class ? ` — ${alertCam.detected_class}` : '';
+    alertTxt.textContent = `BAHAYA: ${alertCam.cam_name || alertCam.cam_id}${gasInfo}!`;
+    banner.classList.add('visible');
+  } else {
+    _alertRoomId = null;
+    banner.classList.remove('visible');
+  }
+}
+
+// Theme toggle
 function toggleTheme() {
   const isDark = document.documentElement.classList.toggle('dark');
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -143,8 +342,8 @@ const ui = {
   cameraLabel: document.getElementById('camera-label'),
   cameraFrame: document.getElementById('camera-frame'),
   cameraPlaceholder: document.getElementById('camera-placeholder'),
-  cameraSelect: document.getElementById('camera-select'),
-  camThumbnails: document.getElementById('cam-thumbnails'),
+  cameraSelect: null,   // removed — camera selection now via Home grid drillDown()
+  camThumbnails: null,  // removed — thumbnail strip replaced by Home grid
   overlayYolo: document.getElementById('overlay-yolo'),
   overlaySensor: document.getElementById('overlay-sensor'),
   overlayFusion: document.getElementById('overlay-fusion'),
@@ -416,7 +615,13 @@ function connectWebSocket() {
     const cameras = data.cameras || [];
 
     ui.kpiCams.textContent = `${cameras.length} Online`;
-    updateCameraSelector(cameras);
+
+    // Start/restart snapshot timer only when camera set changes
+    const _fp = cameras.map(c => c.cam_id).sort().join(',');
+    if (window._camFingerprint !== _fp) {
+      window._camFingerprint = _fp;
+      startSnapTimer(cameras);
+    }
 
     let cam = cameras.find(c => c.cam_id === selectedCameraId) || cameras[0];
     if (!cam) return;
@@ -448,14 +653,20 @@ function connectWebSocket() {
 
     if (!selectedCameraId && cam) {
       selectedCameraId = cam.cam_id;
-      ui.cameraSelect.value = cam.cam_id;
       switchCamera(cam.cam_id);
     }
 
-    // Update status bar
-    const theme = getStatusTheme(cam.status);
-    ui.statusBar.className = `${theme.bg} w-full h-14 flex items-center justify-between px-6 transition-all duration-500`;
-    ui.globalStatus.textContent = `STATUS: ${cam.status.toUpperCase()}`;
+    // ── Always update room grid + cross-room alert (regardless of current view) ──
+    const _currentView = document.querySelector('.view-section.active')?.id?.replace('view-', '') || 'home';
+    updateRoomGrid(cameras);
+    updateGlobalAlert(cameras, _currentView);
+
+    // ── Update status bar for drill-down single-room view ──
+    if (_currentView === 'dashboard') {
+      const theme = getStatusTheme(cam.status);
+      ui.statusBar.className = ui.statusBar.className.replace(/status-bar-\w+/g, '').trim() + ' ' + theme.bg;
+      ui.globalStatus.textContent = `STATUS: ${cam.status.toUpperCase()}`;
+    }
 
     ui.kpiProb.textContent = cam.prob_akhir + '%';
     updateKPIProb(cam.prob_akhir, cam.status);
@@ -486,8 +697,15 @@ function connectWebSocket() {
     updateGasBadge(cam.detected_class || 'Clean');
     if (cam.class_probs) updateClassBars(cam.class_probs);
 
-    ui.cameraSelect.value = selectedCameraId;
     ui.cameraLabel.textContent = `REC • ${cam.cam_name || cam.cam_id}`;
+
+    // Update room name header in drill-down view
+    const roomNameEl = document.getElementById('camera-room-name');
+    if (roomNameEl) roomNameEl.textContent = cam.cam_name || cam.cam_id;
+
+    // Update drilldown room label
+    const drillLbl = document.getElementById('drilldown-room-label');
+    if (drillLbl) drillLbl.textContent = cam.cam_name || cam.cam_id;
 
     // Sensors
     const temp = cam.temperature !== undefined ? cam.temperature : data.temperature;
@@ -525,7 +743,6 @@ function connectWebSocket() {
       if (c.capture) addCaptureEvent(c.capture, c.status, c.detected_class, data.timestamp);
     });
 
-
   };
 
   ws.onclose = () => {
@@ -543,51 +760,6 @@ function connectWebSocket() {
   };
 }
 
-function updateCameraSelector(cameras) {
-  const sel = ui.cameraSelect;
-
-  // Guard: only rebuild thumbnails if the camera set actually changed
-  const newFingerprint = cameras.map(c => c.cam_id).sort().join(',');
-  if (window._camFingerprint !== newFingerprint) {
-    window._camFingerprint = newFingerprint;
-
-    // Update <select> options
-    const current = new Set([...sel.options].map(o => o.value));
-    cameras.forEach(cam => {
-      if (!current.has(cam.cam_id)) {
-        const opt = document.createElement('option');
-        opt.value = cam.cam_id;
-        opt.textContent = cam.cam_name || cam.cam_id;
-        sel.appendChild(opt);
-      }
-    });
-
-    // Stop old timers, rebuild thumbnails and start fresh timers
-    if (window._thumbTimers) window._thumbTimers.forEach(clearInterval);
-    window._thumbTimers = [];
-
-    const THUMB_INTERVAL = 5000;
-    ui.camThumbnails.innerHTML = cameras.map(c =>
-      `<div onclick="switchCamera('${c.cam_id}')"
-            class="flex-shrink-0 w-20 h-14 bg-zinc-800 rounded border border-zinc-700 cursor-pointer hover:border-indigo-500 transition overflow-hidden relative group"
-            title="${c.cam_name || c.cam_id}">
-         <img id="thumb-${c.cam_id}" src="/snapshot/${c.cam_id}?t=${Date.now()}"
-              class="w-full h-full object-cover" onerror="this.style.opacity='0.3'">
-         <span class="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-black/60 text-zinc-300 py-0.5 truncate px-1 opacity-0 group-hover:opacity-100 transition">
-           ${c.cam_name || c.cam_id}
-         </span>
-       </div>`
-    ).join('');
-
-    cameras.forEach(c => {
-      const timer = setInterval(() => {
-        const img = document.getElementById(`thumb-${c.cam_id}`);
-        if (img) img.src = `/snapshot/${c.cam_id}?t=${Date.now()}`;
-      }, THUMB_INTERVAL);
-      window._thumbTimers.push(timer);
-    });
-  }
-}
 
 connectWebSocket();
 

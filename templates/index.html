@@ -116,6 +116,11 @@
       display: none !important;
     }
 
+    #view-home.active {
+      display: block !important;
+      animation: fadeIn 0.25s ease;
+    }
+
     #view-dashboard.active {
       display: grid !important;
       animation: fadeIn 0.25s ease;
@@ -141,6 +146,49 @@
         opacity: 1;
         transform: translateY(0)
       }
+    }
+
+    /* Room card — Building Overview */
+    .room-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.2s;
+    }
+    .room-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+    .room-card.aman  { border-left-color: #10b981; }
+    .room-card.waspada { border-left-color: #f59e0b; }
+    .room-card.bahaya {
+      border-left-color: #ef4444;
+      box-shadow: 0 0 0 1px rgba(239,68,68,0.25), 0 4px 16px rgba(239,68,68,0.15);
+      animation: card-pulse 2s ease-in-out infinite;
+    }
+    @keyframes card-pulse {
+      0%,100% { box-shadow: 0 0 0 1px rgba(239,68,68,0.25), 0 4px 16px rgba(239,68,68,0.15); }
+      50%     { box-shadow: 0 0 0 2px rgba(239,68,68,0.5),  0 4px 24px rgba(239,68,68,0.30); }
+    }
+    .room-card .thumb {
+      width: 100%;
+      height: 8rem;
+      object-fit: cover;
+      background: #09090b;
+      display: block;
+    }
+    /* Global alert banner */
+    #global-alert-banner {
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+    #global-alert-banner.visible { display: flex; }
+    @keyframes slideIn {
+      from { opacity:0; transform: translateX(16px); }
+      to   { opacity:1; transform: translateX(0); }
     }
 
     /* Chat chips */
@@ -245,18 +293,29 @@
 
   <!-- GLOBAL STATUS BAR -->
   <div id="global-status-bar"
-    class="status-bar-aman sticky top-14 md:top-0 z-40 shrink-0 w-full h-14 flex items-center justify-between px-4 md:px-6 transition-all duration-500">
-    <div class="flex items-center gap-2 md:gap-4 min-w-0">
+    class="status-bar-aman sticky top-14 md:top-0 z-40 shrink-0 w-full flex items-center justify-between px-4 md:px-6 transition-all duration-500"
+    style="min-height:3.5rem; flex-wrap:wrap; gap:0.25rem; padding-top:0.5rem; padding-bottom:0.5rem;">
+    <div class="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
       <span id="global-status" class="text-base md:text-lg font-black tracking-wide truncate">STATUS: AMAN</span>
       <span
         class="hidden sm:inline text-xs px-2 py-0.5 rounded bg-zinc-800/60 border border-zinc-700 text-zinc-300 font-medium"
         id="ws-status">TERHUBUNG</span>
       <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" id="ws-dot"></span>
-      <!-- Bug 2: ESP32 sensor connection badge -->
       <span
         class="hidden md:inline text-xs px-2 py-0.5 rounded bg-zinc-800/50 border border-zinc-700 text-zinc-400 font-bold"
         id="sensor-status">SENSOR --</span>
       <span class="hidden md:inline w-2 h-2 rounded-full bg-zinc-500 shrink-0" id="sensor-dot"></span>
+    </div>
+    <!-- Cross-room alert banner -->
+    <div id="global-alert-banner"
+      class="items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold"
+      style="background:rgba(239,68,68,0.2); border-color:rgba(239,68,68,0.6); color:#fca5a5; max-width:100%;">
+      <i class="ph ph-warning-circle"></i>
+      <span id="global-alert-text" class="truncate max-w-xs"></span>
+      <button id="global-alert-jump"
+        class="ml-1 px-2 py-0.5 rounded text-[10px] font-bold text-white transition"
+        style="background:#ef4444; white-space:nowrap;"
+        onclick="jumpToAlertRoom()">Lihat →</button>
     </div>
     <div class="flex items-center gap-2 shrink-0">
       <span id="current-date" class="text-xs hidden lg:inline">--</span>
@@ -280,9 +339,13 @@
       </div>
       <!-- Nav -->
       <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <button onclick="switchView('dashboard')" id="nav-dashboard"
+        <button onclick="switchView('home')" id="nav-home"
           class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-zinc-900 text-indigo-400 border border-indigo-500/30 font-medium transition">
-          <i class="ph ph-squares-four text-lg"></i> Dashboard
+          <i class="ph ph-buildings text-lg"></i> Overview Gedung
+        </button>
+        <button onclick="switchView('dashboard')" id="nav-dashboard"
+          class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 transition">
+          <i class="ph ph-squares-four text-lg"></i> Detail Ruangan
         </button>
         <button onclick="switchView('events')" id="nav-events"
           class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-zinc-900 text-zinc-400 transition">
@@ -321,8 +384,52 @@
     <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <main id="main-scroll" class="flex-1 overflow-y-auto">
 
-        <!-- KPI CARDS -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 md:p-6 pb-2">
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <!-- VIEW: HOME — Building Overview                             -->
+        <!-- ═══════════════════════════════════════════════════════════ -->
+        <div id="view-home" class="view-section active px-4 md:px-6 py-5">
+
+          <!-- Building summary header -->
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+            <div>
+              <h2 class="text-xl font-bold flex items-center gap-2">
+                <i class="ph ph-buildings text-indigo-400"></i>
+                Overview Gedung
+              </h2>
+              <p class="text-xs mt-0.5" style="color:var(--text-muted)">Klik ruangan untuk melihat detail kamera &amp; sensor</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <!-- Building stats pills -->
+              <div id="bld-safe" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3)">
+                <i class="ph ph-shield-check"></i> <span id="bld-safe-count">0</span> Aman
+              </div>
+              <div id="bld-warn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3)">
+                <i class="ph ph-warning"></i> <span id="bld-warn-count">0</span> Waspada
+              </div>
+              <div id="bld-danger" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3)">
+                <i class="ph ph-fire"></i> <span id="bld-danger-count">0</span> Bahaya
+              </div>
+            </div>
+          </div>
+
+          <!-- Room grid — populated by JS -->
+          <div id="room-grid"
+            class="grid gap-4"
+            style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))">
+            <!-- Placeholder while waiting for first WS message -->
+            <div id="room-grid-placeholder" class="col-span-full flex flex-col items-center justify-center py-16 text-zinc-500">
+              <i class="ph ph-spinner-gap text-4xl mb-3 animate-spin"></i>
+              <p class="text-sm">Menunggu data kamera...</p>
+              <p class="text-xs mt-1">Pastikan minimal satu kamera sudah terdaftar di Pengaturan.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI CARDS — shown in drill-down views only -->
+        <div id="kpi-section" class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 md:p-6 pb-2" style="display:none">
           <!-- Risiko Kebakaran -->
           <div class="glass-card p-4 border-l-4 transition-all duration-500" id="kpi-prob-card" style="border-left-color:#10b981">
             <div class="flex items-center justify-between mb-1">
@@ -345,7 +452,7 @@
             <div class="mt-2 h-1.5 rounded-full" style="background:var(--border)">
               <div id="kpi-cams-bar" class="h-full rounded-full bg-blue-500 transition-all duration-500" style="width:100%"></div>
             </div>
-            <p class="text-[10px] mt-1.5" style="color:var(--text-muted)">Kamera online & streaming</p>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-muted)">Kamera online &amp; streaming</p>
           </div>
           <!-- Update Terakhir -->
           <div class="glass-card p-4">
@@ -363,30 +470,29 @@
 
         <!-- VIEW: DASHBOARD -->
         <div id="view-dashboard"
-          class="view-section active px-4 md:px-6 pb-6 grid grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-4 md:gap-6">
+          class="view-section px-4 md:px-6 pb-6 grid grid-cols-1 md:grid-cols-8 lg:grid-cols-12 gap-4 md:gap-6">
+
+          <!-- Back to Overview button -->
+          <div class="col-span-full flex items-center gap-3 -mb-2">
+            <button onclick="switchView('home')"
+              class="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-indigo-400 transition font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-500/10">
+              <i class="ph ph-arrow-left"></i> Kembali ke Overview Gedung
+            </button>
+            <span id="drilldown-room-label" class="text-xs text-zinc-500"></span>
+          </div>
 
           <!-- Camera Panel (left) -->
           <div class="col-span-1 md:col-span-5 lg:col-span-8 flex flex-col gap-4">
             <div class="glass-card p-3 flex flex-col relative">
               <div class="flex items-center justify-between mb-2 gap-2">
-                <select id="camera-select" onchange="switchCamera(this.value)" class="field-input" style="width:auto">
-                  <option>Pilih Kamera...</option>
-                </select>
-                <div class="flex items-center gap-2 shrink-0">
-                  <!-- Camera size toggle -->
-                  <div class="flex rounded overflow-hidden border border-zinc-700 text-xs font-bold">
-                    <button type="button" id="cam-size-s"
-                      class="px-2.5 py-1.5 bg-indigo-600 text-white transition cursor-pointer" title="Kecil">S</button>
-                    <button type="button" id="cam-size-m"
-                      class="px-2.5 py-1.5 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition cursor-pointer" title="Sedang">M</button>
-                    <button type="button" id="cam-size-l"
-                      class="px-2.5 py-1.5 bg-zinc-800 text-zinc-400 hover:bg-zinc-700 transition cursor-pointer" title="Besar">L</button>
-                  </div>
-                  <button onclick="manualCapture()"
-                    class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition">
-                    <i class="ph ph-camera"></i> Capture
-                  </button>
+                <div class="flex items-center gap-2 min-w-0">
+                  <i class="ph ph-video-camera text-blue-400"></i>
+                  <span id="camera-room-name" class="text-sm font-semibold truncate" style="color:var(--text-primary)">—</span>
                 </div>
+                <button onclick="manualCapture()"
+                  class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-sm font-medium flex items-center gap-2 transition shrink-0">
+                  <i class="ph ph-camera"></i> Capture
+                </button>
               </div>
               <div id="camera-viewport" class="relative bg-black rounded-lg overflow-hidden border border-zinc-800"
                 style="min-height:16rem; flex:1; transition: min-height 0.3s ease">
@@ -415,8 +521,6 @@
                     Fusi: <span id="overlay-fusion" class="text-purple-400">0%</span></div>
                 </div>
               </div>
-              <!-- Thumbnail Strip -->
-              <div id="cam-thumbnails" class="flex gap-2 mt-2 h-16 overflow-x-auto pb-1"></div>
             </div>
 
             <!-- Fused Probability Chart -->
@@ -446,29 +550,6 @@
               </div>
               <div id="events-feed" class="flex gap-3 overflow-x-auto pb-1" style="min-height:2rem">
                 <p class="text-xs text-zinc-500 italic py-2">Belum ada event.</p>
-              </div>
-            </div>
-
-            <!-- Remote Camera Feed -->
-            <div class="glass-card p-3">
-              <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-semibold uppercase flex items-center gap-1.5" style="color:var(--text-muted)">
-                  <i class="ph ph-broadcast text-red-400"></i> Kamera Remote
-                </p>
-                <span id="cameraStatus" class="text-[10px] px-2 py-0.5 rounded-full" style="background:rgba(113,113,122,0.2);color:var(--text-muted)">Menunggu koneksi kamera...</span>
-              </div>
-              <div class="relative bg-black rounded-lg overflow-hidden border border-zinc-800" style="min-height:12rem">
-                <img
-                  id="remoteCameraFeed"
-                  src="/api/camera-stream"
-                  alt="Live Camera Feed"
-                  class="w-full h-full object-cover"
-                  onerror="this.src='/static/no-signal.png'; setTimeout(() => this.src='/api/camera-stream', 3000)"
-                />
-                <div class="absolute top-2 left-2 bg-red-600/90 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                  REMOTE
-                </div>
               </div>
             </div>
           </div>
@@ -846,10 +927,15 @@
   <!-- BOTTOM TAB BAR (mobile only) -->
   <nav id="bottom-tab-bar" class="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t"
     style="background:var(--sidebar-bg); border-color:var(--sidebar-border); height:4rem">
-    <button id="tab-dashboard" onclick="switchView('dashboard')"
+    <button id="tab-home" onclick="switchView('home')"
       class="tab-btn active flex-1 flex flex-col items-center justify-center gap-0.5">
+      <i class="ph ph-buildings text-xl"></i>
+      <span class="text-[9px] font-medium">Overview</span>
+    </button>
+    <button id="tab-dashboard" onclick="switchView('dashboard')"
+      class="tab-btn flex-1 flex flex-col items-center justify-center gap-0.5">
       <i class="ph ph-squares-four text-xl"></i>
-      <span class="text-[9px] font-medium">Dashboard</span>
+      <span class="text-[9px] font-medium">Detail</span>
     </button>
     <button id="tab-events" onclick="switchView('events')"
       class="tab-btn flex-1 flex flex-col items-center justify-center gap-0.5">
