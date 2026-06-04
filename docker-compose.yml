@@ -1,0 +1,26 @@
+# docker-compose.yml
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    command: --model Qwen/Qwen2.5-1.5B-Instruct --port 8002
+    ports: ["8002:8002"]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: 1, capabilities: [gpu] }]
+
+  dashboard:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    environment:
+      CHATBOT_SERVICE_URL: http://chatbot:8001
+
+  chatbot:
+    build: .
+    command: uvicorn chatbot_service.main:app --host 0.0.0.0 --port 8001
+    ports: ["8001:8001"]
+    environment:
+      VLLM_BASE_URL: http://vllm:8002/v1
+      DASHBOARD_BASE_URL: http://dashboard:8000
+    depends_on: [vllm]

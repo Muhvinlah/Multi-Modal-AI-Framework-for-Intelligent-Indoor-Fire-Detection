@@ -1,359 +1,739 @@
-# 🔥 Sistem Deteksi Kebakaran Modular
+# Sistem Deteksi Kebakaran — Multi-Modal AI
 
-Sistem deteksi kebakaran berbasis IoT (ESP32 + 6 Sensor Gas MQ), Computer Vision (YOLOv11), Machine Learning 
-(XGBoost Decision Fusion), LSTM time-series anomaly detection, dan Chatbot K3 lokal (Qwen 2.5 1.5B GGUF + Hybrid RAG).
+Sistem deteksi kebakaran berbasis IoT + AI yang menggabungkan ESP32 (sensor gas MQ), Computer Vision (YOLOv11), LSTM anomaly detection, XGBoost sensor fusion, dan Chatbot K3 offline menggunakan LLM lokal (Qwen 2.5 AWQ via vLLM).
 
-**Dikembangkan oleh:** Ervin, Akmal, Jascon, Farhan — PBL Semester 6
-
-## Fitur Utama
-- **Multi-Camera RTSP/ONVIF** — Streaming dan analisis per-kamera secara paralel.
-- **ESP32 + 6x Sensor Gas MQ** — MQ-2 (Gas), MQ-4 (CH4), MQ-5 (LPG), MQ-7 (CO), MQ-135 (Air Quality), MQ-3 (Alkohol).
-- **AI Decision Fusion** — YOLOv11 (visual api/asap) + XGBoost (data sensor RAW→PPM) digabungkan.
-- **LSTM Anomaly Detection** — Autoencoder time-series mendeteksi pola sensor abnormal, dengan severity + feature attribution.
-- **Chatbot K3 Offline** — Qwen 2.5 1.5B / Gemma 3 / Llama 3.2 GGUF + GPU auto-detect (CUDA/Vulkan/CPU). Dilengkapi:
-  - **Hybrid RAG** — BM25 (keyword) + dense embedding multilingual + cross-encoder re-ranking.
-  - **Anti-halusinasi guard** — pertanyaan ambigu/sensor=0 di-klarifikasi, bukan dikarang.
-  - **Intent routing** — smalltalk / tool / RAG / system-meta diarahkan ke pipeline yang tepat.
-  - **Tool calling** — bot bisa query data real-time (sensor sekarang, tren LSTM, daftar kamera, riwayat alert).
-  - **Conversation summary** — history panjang diringkas otomatis agar tidak melebihi context window.
-- **Feedback Loop** — Tombol 👍/👎 per jawaban, tersimpan ke SQLite, untuk continuous improvement.
-- **Eval Harness** — Skrip evaluasi keyword-recall otomatis terhadap testset.
-- **Dashboard Web Dinamis** — Konfigurasi kamera, threshold, dan monitoring real-time.
-- **Notifikasi Telegram** — Kirim alert otomatis saat terdeteksi bahaya.
-- **ESP32 Captive Portal** — Konfigurasi WiFi, URL server, dan Camera ID via portal web, tersimpan di NVS.
+**Tim:** Ervin, Akmal, Jascon, Farhan — PBL Semester 6
 
 ---
 
-## 📂 Struktur Proyek
+## Arsitektur Sistem
 
 ```
-.
-├── main.py                  # Entry point FastAPI
+┌─────────────┐     ┌──────────────────┐     ┌──────────────────┐
+│   ESP32     │────▶│  Dashboard       │────▶│  Chatbot Service │
+│ 6x Sensor   │     │  FastAPI :8000   │◀────│  FastAPI :8001   │
+│ MQ Gas      │     │  YOLO + LSTM     │     │  RAG + Intent    │
+└─────────────┘     │  XGBoost Fusion  │     │  Tool Calling    │
+                    └──────────────────┘     └────────┬─────────┘
+                                                       │ OpenAI API compat
+                                             ┌─────────▼─────────┐
+                                             │  vLLM Server      │
+                                             │  :8002            │
+                                             │  Qwen2.5-3B AWQ   │
+                                             └───────────────────┘
+```
+
+| Service | Port | Teknologi | Deskripsi |
+|---------|------|-----------|-----------|
+| Dashboard | 8000 | FastAPI | Sensor, kamera RTSP, YOLO, LSTM, WebSocket |
+| Chatbot Service | 8001 | FastAPI | Intent routing, RAG, tool calling, circuit breaker |
+| vLLM | 8002 | vLLM OpenAI-compat | Qwen 2.5-3B AWQ inference |
+
+---
+
+## Persyaratan Hardware
+
+| Komponen | Minimum | Rekomendasi |
+|----------|---------|-------------|
+| GPU | NVIDIA RTX 3060 6 GB | RTX 3060 Ti 8 GB+ |
+| RAM | 16 GB | 32 GB |
+| Disk | 20 GB free | 40 GB free |
+| OS | Ubuntu 20.04+ / WSL2 | Ubuntu 22.04 LTS |
+| CUDA | 12.1 | 12.4 |
+
+> **Windows:** vLLM tidak support Windows native. Wajib gunakan **WSL2** (Ubuntu) untuk menjalankan vLLM. Dashboard dan chatbot service bisa jalan di Windows Python biasa.
+
+---
+
+## Struktur Proyek
+
+```
+sistem_deteksi_kebakaran/
+├── main.py                      # Entry point Dashboard (FastAPI :8000)
 ├── app/
-│   ├── config.py            # Konfigurasi global, state dinamis, & RAG config
-│   ├── auth.py              # Login / JWT authentication
-│   ├── camera.py            # Manager multi-kamera RTSP + get_camera_list()
-│   ├── sensor.py            # Endpoint data sensor ESP32 + snapshot cache
-│   ├── ai_engine.py         # YOLO + XGBoost + Decision Fusion + RAW→PPM
-│   ├── lstm_anomaly.py      # LSTM autoencoder anomaly + score history
-│   ├── chatbot.py           # Chatbot orchestrator (intent + tool + RAG + summary)
-│   ├── rag_engine.py        # Hybrid RAG: BM25 + dense + cross-encoder rerank
-│   ├── intent_router.py     # Rule-based intent classifier + smalltalk
-│   ├── chat_tools.py        # Tool registry + dispatcher (real-time data)
-│   ├── conversation.py      # Sliding-window history + summarization
-│   ├── feedback.py          # Feedback API + SQLite storage
-│   ├── websocket_handler.py # WebSocket monitoring real-time
-│   ├── notification.py      # Telegram notification + recent-alerts buffer
-│   └── pdf_export.py        # Export laporan PDF
-├── esp32/fire_sensor/
-│   └── fire_sensor.ino      # Firmware ESP32 (Captive Portal + NVS)
-├── models/
-│   ├── best.pt              # Model YOLOv11
-│   ├── fire_detection_rf.pkl # Model XGBoost sensor
-│   ├── scaler.pkl           # StandardScaler untuk fitur XGBoost
-│   ├── lstm_anomaly.keras   # Model LSTM autoencoder
-│   ├── lstm_scaler.pkl      # Scaler untuk fitur LSTM
-│   ├── lstm_threshold.json  # Threshold + scale_k normalisasi LSTM
-│   ├── bm25_index.pkl       # Index BM25 (di-generate ingest, git-ignored)
-│   ├── qwen2.5-1.5b-k3.gguf        # Model chatbot Qwen 2.5 GGUF
-│   ├── train_chatbot/       # Notebook fine-tuning chatbot
-│   │   ├── Finetune_K3_Qwen_1.5B_Kaggle.ipynb  # Qwen (utama)
-│   │   └── Finetune_K3_Gemma.ipynb              # Gemma (legacy)
-│   ├── train_sensor/        # Notebook Colab training sensor
-│   │   └── model_performance_training.ipynb
-│   └── train_yolo/          # Training YOLOv11
-├── docs/
-│   ├── *.pdf                # PDF panduan K3 untuk RAG
-│   └── faq/system.md        # FAQ Q&A terstruktur untuk RAG
-├── eval/
-│   └── testset.json         # Testset evaluasi chatbot (30 pertanyaan)
+│   ├── ai_engine.py             # YOLO + XGBoost + Decision Fusion
+│   ├── lstm_anomaly.py          # LSTM autoencoder anomaly detection
+│   ├── camera.py                # Manager multi-kamera RTSP
+│   ├── sensor.py                # Endpoint data sensor ESP32
+│   ├── chatbot_proxy.py         # Circuit-breaker proxy ke chatbot_service
+│   ├── internal_api.py          # API internal (sensor snapshot dll)
+│   ├── auth.py                  # Login / JWT
+│   ├── feedback.py              # Feedback loop (SQLite)
+│   ├── notification.py          # Telegram alert
+│   ├── pdf_export.py            # Export laporan PDF
+│   ├── websocket_handler.py     # WebSocket real-time monitoring
+│   └── config.py                # Konfigurasi global + state dinamis
+├── chatbot_service/             # Chatbot microservice (FastAPI :8001)
+│   ├── main.py                  # Entry point chatbot service
+│   ├── config.py                # Config terpusat (env vars)
+│   ├── llm_engine.py            # Klien ke vLLM (openai-compat)
+│   ├── rag_engine.py            # Hybrid RAG: BM25 + dense + rerank
+│   ├── intent_router.py         # Intent classifier
+│   ├── chat_tools.py            # Tool calling dispatcher
+│   ├── prompt_builder.py        # Prompt assembly
+│   ├── conversation.py          # History + auto-summary
+│   └── requirements.txt         # Dependensi chatbot service
+├── models/                      # Model AI (sebagian git-ignored)
+│   ├── best.pt                  # YOLOv11 deteksi api/asap
+│   ├── fire_detection_rf.pkl    # XGBoost sensor prediction
+│   ├── scaler.pkl               # StandardScaler fitur sensor
+│   ├── lstm_anomaly.keras       # LSTM autoencoder
+│   ├── lstm_scaler.pkl          # Scaler LSTM
+│   ├── lstm_threshold.json      # Threshold normalisasi LSTM
+│   └── qwen2.5-3b-base-awq/     # AWQ model (git-ignored, ~2 GB)
 ├── scripts/
-│   ├── build_training_data.py  # Gabung dataset + feedback + synthetic
-│   ├── generate_synthetic.py   # Generate Q&A via Claude/OpenAI API
-│   ├── analyze_feedback.py     # Analisis pola feedback
-│   └── migrate_to_3b.py        # Helper cek hardware upgrade model
-├── ingest_pdf.py            # Ingest PDF → ChromaDB + BM25
-├── ingest_faq.py            # Ingest FAQ markdown → ChromaDB + BM25
-├── eval_chatbot.py          # Run evaluasi keyword-recall
-├── templates/index.html     # Dashboard UI
-├── static/js/dashboard.js   # Frontend logic + feedback UI
-├── requirements.txt
-└── .env.example
+│   ├── start_all.sh             # Start semua service (Linux/WSL2)
+│   ├── stop_all.sh              # Stop semua service
+│   ├── smoke_test_e2e.sh        # End-to-end smoke test
+│   ├── start_vllm.sh            # Start vLLM (Linux/WSL2)
+│   ├── start_vllm_wsl.ps1       # Start vLLM via WSL2 (Windows PowerShell)
+│   ├── download_base_model.py   # Download Qwen2.5-3B dari HuggingFace
+│   ├── quantize_to_awq.py       # Quantize ke AWQ (venv_awq)
+│   └── requirements_awq.txt     # Dependensi quantize (venv terpisah)
+├── esp32/fire_sensor/
+│   └── fire_sensor.ino          # Firmware ESP32 (Captive Portal + NVS)
+├── docs/                        # PDF panduan K3 untuk RAG
+│   ├── *.pdf
+│   └── faq/system.md
+├── templates/index.html         # Dashboard UI
+├── static/js/dashboard.js       # Frontend logic
+├── ingest_pdf.py                # Ingest PDF → ChromaDB + BM25
+├── ingest_faq.py                # Ingest FAQ → ChromaDB + BM25
+├── eval_chatbot.py              # Evaluasi recall chatbot
+├── requirements.txt             # Dependensi dashboard
+├── .env.example                 # Template env dashboard
+├── .env.chatbot.example         # Template env chatbot service
+└── docker-compose.yml           # Alternatif deploy via Docker
 ```
 
 ---
 
-## ⚠️ Model AI (Git-Ignored)
+## Setup Dari Awal (Fresh Install)
 
-File model berukuran besar **tidak** disertakan di repository.
+Ikuti langkah-langkah di bawah secara berurutan.
 
-### Download Model Chatbot
+### Langkah 1 — Clone & Persiapan Python
 
-| Model | URL | Ukuran | Keterangan |
-|-------|-----|--------|------------|
-| Qwen 2.5 1.5B **Clean** (tanpa fine-tune) | [Download](http://data.scz.my.id/qwen2.5-1.5b-instruct-q4_k_m.gguf) | ~950MB | Langsung pakai, bahasa Indonesia OK |
-| Qwen 2.5 1.5B **Fine-Tuned K3** | [Download](http://data.scz.my.id/qwen2.5-1.5b-k3.gguf) | ~950MB | Sudah dilatih domain K3, **rekomendasi** |
+```bash
+git clone <repo-url>
+cd sistem_deteksi_kebakaran
 
-> Taruh file `.gguf` di folder `models/` lalu rename sesuai `.env` (`qwen2.5-1.5b-k3.gguf`).
-> **Penting:** Nama file harus mengandung `qwen`, `gemma`, atau `llama` agar chatbot otomatis memilih format prompt yang benar.
+# Python 3.10–3.12 (disarankan 3.11)
+python --version   # pastikan >= 3.10
 
-### Download Dataset Training
+# Buat virtual environment utama
+python -m venv venv
 
-| File | URL |
-|------|-----|
-| `dataset_100k.jsonl` (100K Q&A K3) | [Download](http://data.scz.my.id/dataset_100k.jsonl) |
+# Aktivasi
+# Windows PowerShell:
+.\venv\Scripts\Activate.ps1
+# Linux/WSL2:
+source venv/bin/activate
+```
 
-### Model AI Lainnya
+### Langkah 2 — Install Dependensi Dashboard
+
+```bash
+pip install -r requirements.txt
+```
+
+Untuk fitur kamera RTSP (opsional):
+```bash
+pip install opencv-python-headless
+```
+
+### Langkah 3 — Install Dependensi Chatbot Service
+
+```bash
+pip install -r chatbot_service/requirements.txt
+```
+
+### Langkah 4 — Download Model AI
+
+Model AI tidak disertakan di repo karena ukurannya besar.
+
+#### 4a. Model Sensor & YOLO (wajib)
 
 | File | Taruh di | Keterangan |
 |------|----------|------------|
 | `best.pt` | `models/` | YOLOv11 deteksi api & asap |
 | `fire_detection_rf.pkl` | `models/` | XGBoost sensor prediction |
 | `scaler.pkl` | `models/` | StandardScaler fitur sensor |
+| `lstm_anomaly.keras` | `models/` | LSTM autoencoder anomaly |
+| `lstm_scaler.pkl` | `models/` | Scaler LSTM |
 
----
+#### 4b. Model AWQ untuk vLLM (wajib untuk chatbot)
 
-## 🚀 Cara Menjalankan
+Model ini perlu digenerate sendiri (~30-40 menit, sekali jalan):
 
-
-### 1. Setup Environment
 ```bash
-python -m venv venv
+# Buat venv TERPISAH khusus untuk quantize — jangan campur dengan venv utama
+python -m venv venv_awq
+
 # Windows:
-venv\Scripts\activate
-# Linux/Mac:
-source venv/bin/activate
+.\venv_awq\Scripts\Activate.ps1
+# Linux/WSL2:
+source venv_awq/bin/activate
+
+pip install -r scripts/requirements_awq.txt
+
+# Download model base dari HuggingFace (~6.5 GB)
+python scripts/download_base_model.py
+
+# Quantize ke AWQ (~30-40 menit, output ~2 GB di models/qwen2.5-3b-base-awq/)
+python scripts/quantize_to_awq.py
+
+deactivate
+# venv_awq bisa dihapus setelah quantize selesai
 ```
 
-### 2. Install Dependencies Utama
-```bash
-pip install -r requirements.txt
-```
+> **Catatan:** Proses quantize butuh NVIDIA GPU + CUDA. Jalankan di mesin yang sama atau salin folder `models/qwen2.5-3b-base-awq/` ke server target.
 
-### 3. Install llama-cpp-python (Chatbot)
+### Langkah 5 — Setup RAG Knowledge Base
 
-> **PENTING:** `llama-cpp-python` perlu di-install **terpisah** karena memerlukan compile flag sesuai GPU.
-
-#### Opsi A: NVIDIA GPU (CUDA) — Performa Terbaik
-```bash
-# Windows (butuh Visual Studio Build Tools)
-set CMAKE_ARGS=-DGGML_CUDA=ON
-pip install llama-cpp-python --no-cache-dir
-
-# Linux
-CMAKE_ARGS="-DGGML_CUDA=ON" pip install llama-cpp-python --no-cache-dir
-```
-
-#### Opsi B: AMD/Intel GPU (Vulkan) — Rekomendasi untuk AMD
-```bash
-# Windows (butuh Visual Studio Build Tools + Vulkan SDK)
-set CMAKE_ARGS=-DGGML_VULKAN=ON
-pip install llama-cpp-python --no-cache-dir
-
-# Linux
-CMAKE_ARGS="-DGGML_VULKAN=ON" pip install llama-cpp-python --no-cache-dir
-```
-
-#### Opsi C: CPU Only — Tanpa GPU
-```bash
-pip install llama-cpp-python --no-cache-dir
-```
-
-> **Windows:** Jika gagal compile, install [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) terlebih dahulu (pilih "Desktop development with C++").
-
-### 4. Download Model RAG (Satu Kali)
-
-Hybrid RAG memakai embedding multilingual + cross-encoder re-ranker (download otomatis saat pertama dipakai):
+RAG menggunakan ChromaDB (vector DB) + BM25 (keyword search). Jalankan sekali saat pertama kali, atau ulang jika dokumen berubah.
 
 ```bash
-# Embedding multilingual (~440MB) — jauh lebih bagus untuk Bahasa Indonesia
-python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-base'); print('embedding OK')"
+# Aktifkan venv utama dulu
+# Windows: .\venv\Scripts\Activate.ps1
+# Linux:   source venv/bin/activate
 
-# Cross-encoder re-ranker (~568MB) — opsional tapi rekomendasi
-python -c "from sentence_transformers import CrossEncoder; CrossEncoder('BAAI/bge-reranker-v2-m3'); print('reranker OK')"
+# Download embedding model (~440 MB, sekali jalan)
+python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-base'); print('OK')"
 
-# Tokenizer NLTK untuk BM25
-python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+# Ingest PDF panduan K3 → ChromaDB + BM25 (PDF ada di docs/)
+python ingest_pdf.py
+
+# Ingest FAQ markdown → merge ke BM25 yang sama
+python ingest_faq.py
 ```
 
-> **RAM terbatas?** Set `RERANKER_MODEL_NAME=` (kosong) di `.env` untuk skip re-ranker — RAG tetap jalan (hybrid tanpa rerank).
-> **Ganti embedding?** Jika mengubah `EMBEDDING_MODEL_NAME`, hapus folder `chroma_db_native/` lalu re-ingest (dimensi vektor berbeda).
+> Jika ganti `EMBEDDING_MODEL_NAME`, wajib hapus `chroma_db_native/` dan `models/bm25_index.pkl` lalu ulangi ingest.
 
-### 5. Konfigurasi Environment
+Untuk memakai re-ranker (opsional, +568 MB RAM, akurasi lebih baik):
+```bash
+python -c "from sentence_transformers import CrossEncoder; CrossEncoder('BAAI/bge-reranker-v2-m3'); print('OK')"
+```
+
+### Langkah 6 — Konfigurasi Environment
+
+#### 6a. Dashboard (`.env`)
+
 ```bash
 cp .env.example .env
 ```
-Edit file `.env`:
-- `TELEGRAM_TOKEN` dan `CHAT_ID` — untuk notifikasi
-- `CHATBOT_MODEL_PATH` — path ke file GGUF chatbot
-- `EMBEDDING_MODEL_NAME` — opsional, default `intfloat/multilingual-e5-base`
-- `RERANKER_MODEL_NAME` — opsional, kosongkan untuk disable re-ranker
-- `RAG_BM25_WEIGHT` / `RAG_DENSE_WEIGHT` — opsional, bobot hybrid (default 0.4 / 0.6)
-- `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` — opsional, hanya untuk `generate_synthetic.py`
 
-### 6. Ingest Dokumen K3 (RAG Knowledge Base)
-Letakkan file PDF panduan K3 ke folder `docs/`. **Jalankan `ingest_pdf.py` dulu, baru `ingest_faq.py`** (FAQ di-merge ke index BM25 PDF):
+Edit `.env`:
+
+```ini
+# WAJIB diisi:
+SECRET_KEY=ganti-dengan-string-acak-panjang
+TELEGRAM_TOKEN=your_bot_token
+CHAT_ID=your_chat_id
+
+# API key internal (dipakai dashboard ↔ chatbot service)
+DASHBOARD_API_KEY=ganti-dengan-string-acak
+
+# Opsional (nilai default sudah cukup):
+# EMBEDDING_MODEL_NAME=intfloat/multilingual-e5-base
+# RERANKER_MODEL_NAME=BAAI/bge-reranker-v2-m3
+# CHATBOT_SERVICE_URL=http://localhost:8001
+```
+
+#### 6b. Chatbot Service (`.env.chatbot`)
+
 ```bash
-python ingest_pdf.py     # PDF → ChromaDB + BM25
-python ingest_faq.py     # docs/faq/*.md → ChromaDB + BM25 (merge)
+cp .env.chatbot.example .env.chatbot
 ```
 
-> Rebuild penuh (mis. ganti embedding model): `rm -rf chroma_db_native/ models/bm25_index.pkl` lalu ulangi kedua perintah di atas.
+Edit `.env.chatbot`:
 
-### 7. Jalankan Server
+```ini
+VLLM_BASE_URL=http://localhost:8002/v1
+VLLM_API_KEY=EMPTY
+CHATBOT_MODEL_NAME=qwen-k3
+
+DASHBOARD_BASE_URL=http://localhost:8000
+DASHBOARD_API_KEY=ganti-dengan-string-yang-sama-dengan-dashboard
+
+CHATBOT_PORT=8001
+```
+
+> **Penting:** `DASHBOARD_API_KEY` di `.env` dan `.env.chatbot` harus identik.
+
+---
+
+## Menjalankan Sistem
+
+### Pilihan A — Linux / WSL2 (Rekomendasi)
+
+Satu perintah untuk start semua service sekaligus:
+
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8500
+# Dari root proyek (venv sudah aktif)
+bash scripts/start_all.sh
 ```
-Buka **http://localhost:8500** di browser.
 
-Chatbot otomatis mendeteksi GPU:
+Sistem akan start berurutan: **vLLM → chatbot service → dashboard**.
+
+Buka browser: **http://localhost:8000**
+
+Untuk stop:
+```bash
+bash scripts/stop_all.sh
 ```
-[Chatbot] SLM loaded: models/qwen2.5-1.5b-k3.gguf (CUDA (GeForce RTX 3060))
-# atau
-[Chatbot] SLM loaded: models/qwen2.5-1.5b-k3.gguf (Vulkan/GPU)
-# atau
-[Chatbot] SLM loaded: models/qwen2.5-1.5b-k3.gguf (CPU fallback)
+
+Monitor log real-time:
+```bash
+tail -f logs/vllm.log logs/chatbot.log logs/dashboard.log
 ```
 
 ---
 
-## 🔌 Firmware ESP32
+### Pilihan B — Windows (PowerShell + WSL2)
 
-ESP32 menggunakan **Captive Portal** untuk konfigurasi WiFi dan server URL.
+vLLM tidak support Windows native — wajib pakai WSL2 untuk vLLM. Dashboard dan chatbot service tetap jalan di Windows Python biasa.
 
-### Pertama Kali (Setup)
-1. Buka `esp32/fire_sensor/fire_sensor.ino` di **Arduino IDE**.
-2. Install board **ESP32 Dev Module** dan library **ArduinoJson**, **Preferences**.
-3. Upload firmware.
-4. ESP32 akan membuat WiFi AP: **FireSensor_XXXX** (tanpa password).
-5. Hubungkan ke AP tersebut → browser otomatis buka halaman konfigurasi.
-6. Isi **WiFi SSID**, **Password**, **Server URL**, dan **Camera ID**.
-7. Klik Save → ESP32 restart dan mulai kirim data.
+#### Persiapan WSL2 (sekali jalan)
 
-### Reset Konfigurasi
-Tahan tombol **BOOT** selama **5 detik** saat ESP32 menyala → konfigurasi akan di-reset dan portal muncul kembali.
+1. **Install WSL2** (jika belum):
+   ```powershell
+   wsl --install
+   # Restart, lalu set Ubuntu sebagai default
+   wsl --set-default Ubuntu
+   ```
 
-### Pin Sensor ESP32
-| Sensor | Pin GPIO | Gas Target |
-|--------|----------|------------|
-| MQ-4 (CH₄) | GPIO32 | Metana |
-| MQ-5 (LPG) | GPIO33 | LPG |
-| MQ-135 (Air Quality) | GPIO34 | Kualitas Udara |
-| MQ-2 (Gas) | GPIO35 | Gas Mudah Terbakar |
-| MQ-7 (CO) | GPIO36 | Karbon Monoksida |
-| MQ-3 (Alkohol) | GPIO39 | Alkohol |
+2. **Setup Python di WSL2:**
+   ```bash
+   # Di dalam WSL2 terminal
+   sudo apt-get update
+   sudo apt-get install -y python3-pip python3.12-venv
+   python3 -m venv ~/venv_vllm
+   curl -sS https://bootstrap.pypa.io/get-pip.py | ~/venv_vllm/bin/python3
+   ~/venv_vllm/bin/pip install vllm
+   ```
 
-> Sensor di-supply 5V, ESP32 ADC membaca 3.3V (12-bit, 0-4095).
-> **Tidak perlu kalibrasi manual** — backend mengkonversi RAW ADC → PPM via kurva datasheet, dan model ML yang mengklasifikasi.
+3. **Install CUDA toolkit & compiler di WSL2** (untuk FlashInfer JIT):
+   ```bash
+   # Di dalam WSL2 terminal (buka langsung dari Start Menu, bukan PowerShell)
+   sudo apt-get install -y nvidia-cuda-toolkit build-essential
+   nvcc --version   # verifikasi nvcc
+   c++ --version    # verifikasi g++ (linker CUDA extension)
+   ```
+
+4. **Salin model AWQ ke lokasi yang bisa diakses WSL2:**
+   Model di `D:\...\models\qwen2.5-3b-base-awq\` otomatis terbaca oleh WSL2 via `/mnt/d/...` — tidak perlu disalin.
+
+#### Menjalankan Service
+
+Buka **3 terminal terpisah** di Windows:
+
+**Terminal 1 — vLLM (via WSL2):**
+```powershell
+cd D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran
+.\scripts\start_vllm_wsl.ps1
+```
+Tunggu sampai muncul:
+```
+INFO:     Uvicorn running on http://0.0.0.0:8002
+```
+
+**Terminal 2 — Chatbot Service (Windows Python):**
+```powershell
+cd D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran
+.\venv\Scripts\Activate.ps1
+uvicorn chatbot_service.main:app --host 0.0.0.0 --port 8001 --env-file .env.chatbot
+```
+
+**Terminal 3 — Dashboard (Windows Python):**
+```powershell
+cd D:\sem 6\PBL sem 6\SDK\sistem_deteksi_kebakaran
+.\venv\Scripts\Activate.ps1
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Buka browser: **http://localhost:8000**
 
 ---
 
-## 🤖 Fine-Tuning Chatbot
+### Pilihan C — Docker Compose (Alternatif)
 
-### Opsi A: Qwen 2.5 1.5B (Rekomendasi — Kaggle)
-Model terbaik di kelasnya, fasih bahasa Indonesia. Kaggle gratis 2x T4 GPU.
+```bash
+# Pastikan NVIDIA Container Toolkit sudah terinstall
+docker compose up -d
 
-1. Upload `Finetune_K3_Qwen_1.5B_Kaggle.ipynb` ke **Kaggle Notebooks**.
-2. Setting: **Accelerator** = GPU T4 x2, **Internet** = On.
-3. Tambahkan **Kaggle Secret**: `HF_TOKEN` = token Hugging Face Anda.
-4. Dataset otomatis di-download dari `data.scz.my.id` di Cell 3.
-5. Jalankan Cell 1 → **Restart Session** → Lanjut Cell 2 sampai selesai.
-6. Download `qwen2.5-1.5b-k3.gguf` dari tab Output → taruh di `models/`.
+# Cek status
+docker compose ps
+docker compose logs -f
 
-> **Estimasi:** Training ~5 jam, Convert ~10 menit. Total ~5.5 jam.
+# Stop
+docker compose down
+```
 
-### Opsi B: Gemma 3 270M (Ringan — Colab/Kaggle)
-Model kecil, cocok untuk hardware terbatas.
-
-1. Upload `Finetune_K3_Gemma.ipynb` ke **Google Colab** atau Kaggle.
-2. Atur runtime ke **GPU (T4)**.
-3. Jalankan Cell 1 → **Restart Session** → Lanjutkan dari Cell 2.
-4. Download file `.gguf` → taruh di `models/`.
+> Docker Compose menggunakan image vLLM resmi dari NVIDIA. Membutuhkan Docker Engine 20.10+ dengan NVIDIA GPU support.
 
 ---
 
-## 💬 Arsitektur Chatbot K3
+## Verifikasi Sistem Berjalan
 
-Setiap pesan masuk ke pipeline berlapis di `app/chatbot.py`:
+### Smoke Test Otomatis
 
-```
-Pesan user
-   │
-   ├─ 1. Guard ambigu      → pertanyaan terlalu pendek/kabur → minta klarifikasi
-   ├─ 2. Intent routing    → smalltalk / tool_needed / rag_query / system_meta
-   │       ├─ smalltalk    → balasan instan (tanpa SLM)
-   │       └─ tool_needed  → SLM emit TOOL_CALL → dispatcher → SLM jawab dgn data
-   ├─ 3. Sensor block + LSTM anomaly (severity, feature attribution)
-   ├─ 4. Hybrid RAG retrieve (BM25 + dense + rerank)  [skip jika tool_needed]
-   ├─ 5. Conversation summary (history > 10 turn diringkas)
-   └─ 6. Generate jawaban (Qwen/Gemma/Llama GGUF)
+```bash
+# Jalankan setelah semua service up (Linux/WSL2)
+bash scripts/smoke_test_e2e.sh
 ```
 
-**Tools real-time** (`app/chat_tools.py`): `get_sensor_now`, `get_camera_list`, `query_lstm_history`, `query_alert_history`.
+Ekspektasi output:
+```
+=== Smoke Test E2E ===
+[T1] vLLM running...
+  PASS: vLLM model registered as qwen-k3
+[T2] Chatbot LLM connected...
+  PASS: Chatbot reports llm:true
+[T3] Dashboard proxy reachable...
+  PASS: Dashboard proxy available:true
+[T4a] Smalltalk response...
+  PASS: Smalltalk pendek (X kata)
+[T4b] Detail K3 response...
+  PASS: Detail K3 panjang (X kata)
+[T5] Circuit breaker...
+  PASS: Circuit breaker open — HTTP 503 dalam Xms
+=== Result: 6 passed, 0 failed ===
+```
 
-Response API menyertakan field debug: `message_id`, `intent`, `tool_used`, `lstm`.
+### Cek Manual (curl)
 
-## 🔁 Feedback Loop & Continuous Improvement
+```bash
+# Health check semua service
+curl http://localhost:8002/v1/models          # vLLM
+curl http://localhost:8001/health             # chatbot service
+curl http://localhost:8000/api/chat/health    # dashboard proxy
 
-Setiap jawaban bot punya tombol 👍/👎 (reason opsional saat 👎). Tersimpan ke SQLite `data/feedback.db`.
+# Test chat
+curl -X POST http://localhost:8000/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"pertanyaan": "apa prosedur evakuasi kebakaran?"}'
+```
 
-| Endpoint | Fungsi |
-|----------|--------|
-| `POST /api/feedback` | Submit rating (+1 / -1) + alasan |
-| `GET /api/feedback/stats` | Agregat: positive rate, per-intent, recent negatives |
-| `GET /api/feedback/export` | Export semua feedback untuk training prep |
+### Monitor GPU
+
+```bash
+# Linux/WSL2
+watch -n 1 nvidia-smi
+
+# Windows PowerShell
+while ($true) { nvidia-smi; Start-Sleep 1; Clear-Host }
+```
+
+Target VRAM saat semua service jalan:
+- vLLM: ~2.7 GB (45% dari 6 GB)
+- Dashboard (YOLO + LSTM): ~1.2 GB (20% dari 6 GB)
+- Total: < 4.5 GB → headroom ~1.5 GB
+
+---
+
+## Konfigurasi ESP32
+
+### Wiring Sensor
+
+| Sensor | GPIO | Gas Target | Supply |
+|--------|------|------------|--------|
+| MQ-4 | GPIO32 | Metana (CH₄) | 5V |
+| MQ-5 | GPIO33 | LPG | 5V |
+| MQ-135 | GPIO34 | Kualitas Udara | 5V |
+| MQ-2 | GPIO35 | Gas Mudah Terbakar | 5V |
+| MQ-7 | GPIO36 | Karbon Monoksida | 5V |
+| MQ-3 | GPIO39 | Alkohol | 5V |
+
+ADC ESP32: 12-bit (0–4095), tegangan referensi 3.3V. Supply sensor 5V, pin ADC dibaca 3.3V (gunakan resistor pembagi jika perlu).
+
+### Upload Firmware
+
+1. Buka `esp32/fire_sensor/fire_sensor.ino` di **Arduino IDE 2.x**.
+2. Install board: **ESP32 Dev Module** via Board Manager.
+3. Install library: **ArduinoJson**, **Preferences** via Library Manager.
+4. Pilih port COM yang benar.
+5. Upload firmware.
+
+### Konfigurasi via Captive Portal
+
+Pertama kali atau setelah reset:
+
+1. ESP32 broadcast WiFi AP: **FireSensor_XXXX** (tanpa password).
+2. Hubungkan ke AP tersebut — browser otomatis buka halaman konfigurasi.
+3. Isi:
+   - **WiFi SSID** dan **Password**
+   - **Server URL**: `http://<ip-server>:8000` (gunakan IP LAN, bukan localhost)
+   - **Camera ID**: nama unik untuk ESP32 ini (contoh: `esp32-lab-a`)
+4. Klik **Save** → ESP32 restart dan mulai kirim data ke server.
+
+**Reset konfigurasi:** Tahan tombol **BOOT** 5 detik saat ESP32 menyala.
+
+---
+
+## Detail Konfigurasi Lanjutan
+
+### Environment Variables Lengkap
+
+#### `.env` (Dashboard)
+
+| Variable | Default | Keterangan |
+|----------|---------|------------|
+| `SECRET_KEY` | — | **WAJIB** — JWT signing key |
+| `TELEGRAM_TOKEN` | — | Token bot Telegram |
+| `CHAT_ID` | — | Chat ID Telegram tujuan notifikasi |
+| `DASHBOARD_API_KEY` | `""` | API key internal (dashboard ↔ chatbot) |
+| `CHATBOT_SERVICE_URL` | `http://localhost:8001` | URL chatbot service |
+| `CHATBOT_TIMEOUT` | `120` | Timeout request ke chatbot (detik) |
+| `EMBEDDING_MODEL_NAME` | `intfloat/multilingual-e5-base` | Model embedding RAG |
+| `RERANKER_MODEL_NAME` | `""` | Model re-ranker (kosong = disable) |
+| `RAG_BM25_WEIGHT` | `0.4` | Bobot BM25 dalam hybrid search |
+| `RAG_DENSE_WEIGHT` | `0.6` | Bobot dense embedding |
+| `ENVIRONMENT` | `development` | Set ke `production` untuk mode produksi |
+| `ALLOWED_HOSTS` | `localhost,127.0.0.1` | Host yang diizinkan (production mode) |
+| `ANTHROPIC_API_KEY` | — | Opsional — hanya untuk generate_synthetic.py |
+
+#### `.env.chatbot` (Chatbot Service)
+
+| Variable | Default | Keterangan |
+|----------|---------|------------|
+| `VLLM_BASE_URL` | `http://localhost:8002/v1` | URL vLLM server |
+| `VLLM_API_KEY` | `EMPTY` | API key vLLM (default tidak butuh key) |
+| `CHATBOT_MODEL_NAME` | `qwen-k3` | Nama model yang didaftarkan di vLLM |
+| `DASHBOARD_BASE_URL` | `http://localhost:8000` | URL dashboard untuk tool calling |
+| `DASHBOARD_API_KEY` | `""` | Harus sama dengan dashboard |
+| `CHATBOT_PORT` | `8001` | Port chatbot service |
+| `CHROMA_DB_PATH` | `./chroma_db_native` | Path ChromaDB |
+| `BM25_INDEX_PATH` | `models/bm25_index.pkl` | Path index BM25 |
+
+### Parameter vLLM (RTX 3060 6 GB)
+
+Konfigurasi di `scripts/start_vllm.sh` (Linux) atau `scripts/start_vllm_wsl.ps1` (Windows):
+
+```bash
+--gpu-memory-utilization 0.45   # 2.7 GB dari 6 GB untuk vLLM
+--max-model-len 2048             # Context window
+--max-num-seqs 4                 # Max request concurrent
+--enable-prefix-caching          # Cache system prompt (percepat request ke-2+)
+--enforce-eager                  # Disable CUDA graph capture (hemat VRAM)
+--quantization awq               # Quantization format
+--dtype float16
+```
+
+Jika GPU OOM:
+1. Kurangi `--gpu-memory-utilization` ke `0.40`
+2. Kurangi `--max-model-len` ke `1536`
+3. Jika masih OOM: pindah YOLO ke CPU — edit `app/ai_engine.py`, tambahkan `device="cpu"` saat load model YOLO
+
+---
+
+## Deployment Produksi
+
+### Checklist Sebelum Production
+
+- [ ] `SECRET_KEY` diset ke nilai acak panjang (bukan default)
+- [ ] `DASHBOARD_API_KEY` diset dan identik di `.env` dan `.env.chatbot`
+- [ ] `TELEGRAM_TOKEN` dan `CHAT_ID` valid
+- [ ] `ENVIRONMENT=production` di `.env`
+- [ ] `ALLOWED_HOSTS` diset ke domain/IP server
+- [ ] Port 8000 dibuka di firewall (8001 dan 8002 internal saja)
+- [ ] Model AWQ tersedia di `models/qwen2.5-3b-base-awq/`
+- [ ] RAG sudah di-ingest (`chroma_db_native/` dan `models/bm25_index.pkl` ada)
+- [ ] `nvidia-smi` menunjukkan GPU terdeteksi
+
+### Menjalankan dengan Systemd (Linux Production)
+
+Buat file service untuk setiap komponen:
+
+```bash
+# /etc/systemd/system/fire-vllm.service
+[Unit]
+Description=Fire Detection vLLM
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/opt/sistem_deteksi_kebakaran
+ExecStart=/bin/bash /opt/sistem_deteksi_kebakaran/scripts/start_vllm.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable fire-vllm fire-chatbot fire-dashboard
+sudo systemctl start fire-vllm
+
+# Cek status
+sudo systemctl status fire-vllm
+journalctl -u fire-vllm -f
+```
+
+### Reverse Proxy Nginx (Opsional)
+
+Untuk expose hanya port 80/443 ke luar:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 120s;
+    }
+}
+```
+
+Port 8001 (chatbot) dan 8002 (vLLM) tidak perlu diekspos ke luar — keduanya hanya diakses internal oleh dashboard.
+
+---
+
+## Troubleshooting
+
+### vLLM tidak mau start
+
+**Error: `No module named 'vllm._C'`**
+- vLLM tidak support Windows native.
+- Solusi: gunakan WSL2 (Pilihan B) atau Docker.
+
+**Error: `Could not find nvcc`**
+- CUDA toolkit belum terinstall di WSL2.
+- Solusi:
+  ```bash
+  # Di terminal WSL2 langsung (bukan PowerShell background)
+  sudo apt-get update
+  sudo apt-get install -y nvidia-cuda-toolkit build-essential
+  nvcc --version   # cek nvcc
+  c++ --version    # cek g++ (linker)
+  ```
+
+**Error: `c++: not found` / `ninja build failed` saat FlashInfer JIT**
+- `nvcc` ada tapi `g++` (C++ linker) belum terinstall.
+- Solusi:
+  ```bash
+  sudo apt-get install -y build-essential
+  c++ --version   # verifikasi
+  ```
+- Kemudian hapus cache FlashInfer agar di-build ulang:
+  ```bash
+  rm -rf ~/.cache/flashinfer/
+  ```
+
+**Error: `No module named 'torch._inductor.custom_graph_pass'`**
+- PyTorch versi lama (< 2.6.0). vLLM 0.21.0 butuh PyTorch ≥ 2.6.0.
+- Solusi:
+  ```bash
+  pip install torch==2.6.0+cu124 --index-url https://download.pytorch.org/whl/cu124
+  ```
+
+**Error: `CUDA out of memory`**
+- Solusi: kurangi `--gpu-memory-utilization` ke `0.40`, atau `--max-model-len` ke `1536`.
+
+### Chatbot tidak merespons
+
+**Dashboard menampilkan "Chatbot sedang offline"**
+- Cek apakah chatbot service jalan: `curl http://localhost:8001/health`
+- Cek apakah vLLM jalan: `curl http://localhost:8002/v1/models`
+- Lihat log: `tail -f logs/chatbot.log`
+
+**`"llm": false` di health check**
+- vLLM belum ready. Tunggu beberapa menit setelah start vLLM.
+- Pastikan `VLLM_BASE_URL` di `.env.chatbot` sudah benar.
+- Pastikan `CHATBOT_MODEL_NAME=qwen-k3` (nama yang didaftarkan di vLLM).
+
+### RAG tidak menemukan dokumen relevan
+
+```bash
+# Rebuild RAG dari awal
+rm -rf chroma_db_native/ models/bm25_index.pkl
+python ingest_pdf.py
+python ingest_faq.py
+```
+
+### Sensor ESP32 tidak muncul di dashboard
+
+- Pastikan ESP32 dan server dalam jaringan yang sama.
+- Pastikan Server URL di Captive Portal menggunakan **IP LAN** (contoh: `http://192.168.1.10:8000`), bukan `localhost`.
+- Cek endpoint: `curl http://localhost:8000/api/sensor/latest`
+
+### `sudo: timed out` di WSL2
+
+- Jangan jalankan sudo dari PowerShell background job.
+- Buka terminal WSL2 langsung (klik "Ubuntu" di Start Menu atau `wsl` di terminal baru).
+
+---
+
+## Pengembangan & Training
+
+### Feedback Loop
+
+Setiap jawaban chatbot ada tombol 👍/👎 yang tersimpan ke SQLite:
+
+```bash
+# Analisis pola jawaban buruk
+python scripts/analyze_feedback.py
+
+# Export untuk review
+curl http://localhost:8000/api/feedback/export > feedback_export.json
+```
 
 Loop perbaikan mingguan:
+```bash
+python scripts/analyze_feedback.py           # lihat pola error
+# tulis koreksi ke data/corrections.jsonl
+python scripts/build_training_data.py        # gabung semua sumber
+# upload ke Kaggle → re-run notebook fine-tune → ganti model
+```
+
+### Fine-Tuning Chatbot
+
+#### Qwen 2.5 3B (Rekomendasi — Kaggle)
+
+1. Upload `models/train_chatbot/Finetune_K3_Qwen_1.5B_Kaggle.ipynb` ke Kaggle.
+2. Setting: GPU T4 x2, Internet = On.
+3. Tambah Secret: `HF_TOKEN` = HuggingFace token.
+4. Jalankan sampai selesai.
+5. Download model → salin ke `models/qwen2.5-3b-base-awq/`.
+
+### Evaluasi Chatbot
 
 ```bash
-python scripts/analyze_feedback.py        # lihat pola jawaban buruk per intent
-# tulis jawaban benar ke data/corrections.jsonl (manual)
-python scripts/generate_synthetic.py --provider claude --count 100   # opsional
-python scripts/build_training_data.py     # gabung → data/training_combined.jsonl
-# upload ke Kaggle → re-run notebook fine-tune → ganti .gguf → restart server
+# Server harus jalan dulu
+python eval_chatbot.py
+
+# Output: recall per-kategori di eval/results/results_<timestamp>.json
+# Target: recall >= 70%
 ```
 
-> `data/corrections.jsonl` ditulis manual & di-track Git (oversampled 3x saat build).
-> `feedback.db`, `synthetic_qa.jsonl`, `training_combined.jsonl`, `bm25_index.pkl` git-ignored (regenerable).
+### Training Model Sensor
 
-## 🧪 Evaluasi Chatbot
-
-```bash
-uvicorn main:app --reload          # server harus jalan
-python eval_chatbot.py             # uji 30 pertanyaan di eval/testset.json
-```
-
-Output: keyword-recall keseluruhan + per-kategori, disimpan ke `eval/results/results_<timestamp>.json`. Target awal recall ≥ 70%.
-
-## 🆙 Upgrade Model (Opsional)
-
-```bash
-python scripts/migrate_to_3b.py    # cek RAM/disk sebelum upgrade ke Qwen 3B
-```
-
-> Butuh `pip install psutil` untuk cek RAM akurat (opsional — script tetap jalan tanpanya).
-> Backup model lama dulu: `copy models/qwen2.5-1.5b-k3.gguf models/qwen2.5-1.5b-k3.gguf.bak`.
-
-## 📊 Training Model Sensor (Multi-Class)
-
-Model sensor mendeteksi 4 kelas gas: **Clean**, **Smoke**, **Gasoline**, **Mixture**.
-
-### Pipeline
-```
-ESP32 RAW ADC → Konversi PPM → StandardScaler → Random Forest / XGBoost → Klasifikasi
-```
-
-### Cara Training
-1. Kumpulkan data sensor via GUI `datagather/` (Flask app).
-2. Buka `models/train_sensor/Train_Sensor_Model.ipynb` di **Google Colab / Kaggle**.
+1. Kumpulkan data via `datagather/app.py` (Flask app terpisah).
+2. Buka `models/train_sensor/Train_Sensor_Model.ipynb` di Google Colab.
 3. Upload `dataset_sensor.csv`.
-4. Notebook otomatis: konversi RAW→PPM, training RF + XGBoost, pilih model terbaik.
-5. Download `fire_detection_rf.pkl` + `scaler.pkl` → taruh di `models/`.
+4. Download `fire_detection_rf.pkl` + `scaler.pkl` → taruh di `models/`.
 
-### Mapping Sensor
+---
 
-| Sensor | GPIO | Gas Target | Koefisien `a` | Koefisien `b` |
-|--------|------|------------|---------------|----------------|
+## Konversi RAW ADC → PPM (Referensi)
+
+Backend mengkonversi nilai ADC ESP32 ke PPM menggunakan rumus power-law dari datasheet sensor MQ:
+
+```
+Vout = (RAW_ADC / 4095) × 3.3 V
+ratio = (5V - Vout) / Vout        # proporsional dengan Rs/RL
+PPM   = a × ratio^b               # kurva datasheet (log-log fit)
+```
+
+| Sensor | GPIO | Gas | a | b |
+|--------|------|-----|---|---|
 | MQ-4 | 32 | Metana (CH₄) | 1012.7 | -2.786 |
 | MQ-5 | 33 | LPG | 1000.5 | -2.186 |
 | MQ-135 | 34 | Kualitas Udara | 110.47 | -2.862 |
@@ -361,53 +741,15 @@ ESP32 RAW ADC → Konversi PPM → StandardScaler → Random Forest / XGBoost �
 | MQ-7 | 36 | CO | 99.042 | -1.518 |
 | MQ-3 | 39 | Alkohol | 0.3934 | -1.504 |
 
+Rumus di `app/ai_engine.py` dan notebook training identik untuk konsistensi.
+
 ---
 
-## 📐 Perhitungan Konversi RAW ADC → PPM
+## Lisensi & Kredit
 
-Konversi menggunakan **kurva karakteristik
-.
-+-** dari datasheet sensor MQ (power law).
+Dikembangkan sebagai proyek PBL (Project Based Learning) Semester 6.
 
-### Rumus
-
-```
-1. Vout = (RAW_ADC / 4095) × 3.3V
-
-2. voltage_ratio = (5V - Vout) / Vout       ← proporsional dengan Rs/RL
-
-3. PPM = a × (voltage_ratio)^b              ← kurva datasheet
-```
-
-### Cara Mendapatkan Koefisien `a` dan `b`
-
-Setiap datasheet sensor MQ memiliki grafik **log-log** hubungan Rs/Ro vs PPM.
-Dari grafik tersebut, ambil 2 titik lalu fit ke persamaan `PPM = a × x^b`:
-
-**Contoh MQ-2 (Gas Mudah Terbakar):**
-```
-Titik 1: Rs/Ro = 2.71, PPM = 200
-Titik 2: Rs/Ro = 0.44, PPM = 10000
-
-b = ln(PPM₂/PPM₁) / ln(x₂/x₁)
-b = ln(10000/200) / ln(0.44/2.71)
-b = ln(50) / ln(0.1624)
-b ≈ -2.222
-
-a = PPM₁ / (x₁^b)
-a = 200 / (2.71^(-2.222))
-a ≈ 574.25
-```
-
-> **Catatan:** Tidak ada kalibrasi manual (NORMAL_RAW) — model ML yang mengklasifikasi pola PPM.
-> Rumus di `ai_engine.py` dan notebook training **identik**, menjamin konsistensi.
-
-### Referensi
-
-- [MQ Sensor Datasheet Collection (Pololu)](https://www.pololu.com/category/83/gas-sensors)
-- [MQSensorsLib — Arduino Library (koefisien a,b)](https://github.com/miguel5612/MQSensorsLib)
-- [MQ-2 Datasheet (Winsen)](https://www.winsen-sensor.com/sensors/combustible-gas-sensor/mq-2.html)
-- [MQ-7 Datasheet (Winsen)](https://www.winsen-sensor.com/sensors/co-sensor/mq-7.html)
-- [MQ-135 Datasheet (Winsen)](https://www.winsen-sensor.com/sensors/voc-sensor/mq-135.html)
-- [Curve Fitting Tutorial — Davide Gironi](http://davidegironi.blogspot.com/2014/01/cheap-co2-meter-using-mq135-sensor-with.html)
-
+Model:
+- [Qwen2.5-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct) — Alibaba Cloud
+- [YOLOv11](https://github.com/ultralytics/ultralytics) — Ultralytics
+- [multilingual-e5-base](https://huggingface.co/intfloat/multilingual-e5-base) — Microsoft

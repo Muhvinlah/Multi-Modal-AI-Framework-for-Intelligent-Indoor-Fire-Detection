@@ -1,0 +1,12 @@
+# Install di venv TERPISAH — jangan campur dengan venv utama
+# python -m venv venv_awq
+# source venv_awq/bin/activate  (Linux/Mac)
+# venv_awq\Scripts\activate     (Windows)
+# pip install -r scripts/requirements_awq.txt
+
+# scripts/requirements_awq.txt
+autoawq==0.2.9
+transformers==4.51.3
+torch==2.6.0
+huggingface_hub>=0.23
+accelerate==1.6.0

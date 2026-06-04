@@ -5,7 +5,7 @@ import chromadb
 from sentence_transformers import SentenceTransformer
 
 from app.config import EMBEDDING_MODEL_NAME, CHROMA_DB_PATH
-from app.rag_engine import build_bm25_index
+from chatbot_service.rag_engine import build_bm25_index
 
 _IS_E5 = "e5" in EMBEDDING_MODEL_NAME.lower()
 

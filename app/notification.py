@@ -70,9 +70,10 @@ def kirim_notifikasi_telegram(
     data = urllib.parse.urlencode(
         {"chat_id": CHAT_ID, "text": pesan}
     ).encode("utf-8")
+    _last_sent[camera_name] = now
     try:
         req = urllib.request.Request(url, data=data)
         with urllib.request.urlopen(req, timeout=10) as resp:
-            _last_sent[camera_name] = now
+            pass
     except Exception as e:
         print(f"[Telegram] Gagal mengirim: {e}")

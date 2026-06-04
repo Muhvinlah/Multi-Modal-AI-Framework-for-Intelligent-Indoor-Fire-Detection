@@ -105,6 +105,10 @@ async def receive_sensor_data(payload: SensorPayload, request: Request):
             detail=f"Too many requests. Min interval: {MIN_INTERVAL}s"
         )
     _sensor_rate[client_ip] = now
+    if len(_sensor_rate) > 100:
+        cutoff = now - 60
+        for ip in [k for k, v in _sensor_rate.items() if v < cutoff]:
+            del _sensor_rate[ip]
 
     # --- All-zero guard (ESP32 belum kirim data nyata) ---
     sensor_values = [payload.mq135, payload.mq2, payload.mq3,

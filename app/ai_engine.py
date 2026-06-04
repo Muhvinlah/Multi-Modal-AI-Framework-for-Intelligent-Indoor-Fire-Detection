@@ -49,13 +49,31 @@ SENSOR_CURVES = {
     "mq3":  {"a": 0.3934, "b": -1.504, "label": "Alkohol"},
 }
 
+# Kalibrasi Ro/RL — dihitung dari dataset clean air (median ADC 1 hari,
+# dataset: models/train_sensor/dataset_sensor.csv label=Clean)
+# dan nilai Rs/Ro clean air dari datasheet masing-masing sensor.
+# Rumus: Ro/RL = voltage_ratio_clean / Rs_Ro_clean_datasheet
+# Tanpa ini, voltage_ratio (= Rs/RL) dipakai langsung sbg Rs/Ro
+# → PPM terlalu tinggi (MQ-4: 13x, MQ-5: 179ppm di udara bersih).
+RO_OVER_RL = {
+    "mq4":  0.8770,   # clean ADC=1277, datasheet Rs/Ro=4.4
+    "mq5":  0.3377,   # clean ADC=1942, datasheet Rs/Ro=6.5
+    "mq135": 2.4976,  # clean ADC=621,  datasheet Rs/Ro=3.6
+    "mq2":  1.7225,   # clean ADC=347,  datasheet Rs/Ro=9.8
+    "mq7":  0.5891,   # clean ADC=367,  datasheet Rs/Ro=27
+    "mq3":  0.1113,   # clean ADC=808,  datasheet Rs/Ro=60
+}
+
 
 def raw_adc_to_ppm(sensor_key: str, raw_adc: float) -> float:
     """
-    Konversi RAW ADC → PPM murni dari kurva datasheet.
-    PPM = a * (voltage_ratio)^b
-    Voltage ratio dipakai langsung sebagai proxy Rs/Ro.
-    Tidak ada kalibrasi manual — model yang mengklasifikasi.
+    Konversi RAW ADC → PPM menggunakan kurva datasheet + kalibrasi Ro.
+
+    Pipeline:
+      1. ADC → Vout (tegangan keluaran sensor)
+      2. Vout → Rs/RL  (voltage_ratio = (VCC - Vout) / Vout)
+      3. Rs/RL → Rs/Ro  (bagi dengan Ro/RL dari kalibrasi clean air)
+      4. Rs/Ro → PPM    (PPM = a * (Rs/Ro)^b dari kurva datasheet)
     """
     if sensor_key not in SENSOR_CURVES:
         return 0.0
@@ -65,13 +83,17 @@ def raw_adc_to_ppm(sensor_key: str, raw_adc: float) -> float:
         raw_adc = ADC_MAX - 1
 
     vout = (raw_adc / ADC_MAX) * VCC_ADC
-    voltage_ratio = (VCC_SENSOR - vout) / vout  # Proporsional Rs/RL
+    voltage_ratio = (VCC_SENSOR - vout) / vout  # = Rs/RL
+
+    # Kalibrasi: konversi Rs/RL → Rs/Ro menggunakan Ro/RL dari dataset clean air
+    ro_rl = RO_OVER_RL.get(sensor_key, 1.0)
+    rs_ro = voltage_ratio / ro_rl
 
     a = SENSOR_CURVES[sensor_key]["a"]
     b = SENSOR_CURVES[sensor_key]["b"]
 
     try:
-        ppm = a * math.pow(voltage_ratio, b)
+        ppm = a * math.pow(rs_ro, b)
     except (ValueError, OverflowError):
         ppm = 0.0
 

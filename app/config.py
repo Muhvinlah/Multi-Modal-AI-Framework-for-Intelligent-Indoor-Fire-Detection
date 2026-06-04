@@ -9,6 +9,7 @@
 
 import os
 import json
+import time
 import threading
 from dotenv import load_dotenv
 
@@ -25,7 +26,7 @@ CHAT_ID = os.getenv("CHAT_ID", "")
 THROTTLE_SECONDS = 50
 
 # --- Path Model ---
-YOLO_MODEL_PATH = "models/best.pt"
+YOLO_MODEL_PATH = "models/bestv2.pt"
 XGBOOST_MODEL_PATH = "models/fire_detection_rf.pkl"
 CHATBOT_MODEL_PATH = os.getenv("CHATBOT_MODEL_PATH", "models/qwen2.5-3b-k3-q4_k_m.gguf")
 
@@ -166,7 +167,7 @@ def get_sensor_data(cam_id: str = None) -> dict:
 
 def update_sensor_data(cam_id: str, data: dict):
     with _config_lock:
-        _sensor_data[cam_id] = data
+        _sensor_data[cam_id] = {**data, "_updated_at": time.time()}
 
 
 # Load persisted pada import

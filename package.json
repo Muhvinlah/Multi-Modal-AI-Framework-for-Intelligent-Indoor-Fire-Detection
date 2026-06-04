@@ -1,0 +1,13 @@
+{
+  "name": "multi-modal-ai-fire-detection",
+  "version": "2.0.0",
+  "description": "Multi-Modal AI Framework for Intelligent Indoor Fire Detection",
+  "main": "main.py",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify",
+    "watch:css": "npx tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}
