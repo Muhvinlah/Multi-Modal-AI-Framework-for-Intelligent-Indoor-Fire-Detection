@@ -67,6 +67,10 @@ exec vllm serve "$MODEL" \
 '@
 
 $bashScript = $bashScript.Replace('__MODEL_PATH__', $MODEL_WSL)
+
+# Hapus \r agar format berubah dari CRLF (Windows) menjadi LF (Linux)
+$bashScript = $bashScript -replace "`r`n", "`n"
+
 $tmpFile = "$env:TEMP\start_vllm_tmp.sh"
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
 [System.IO.File]::WriteAllText($tmpFile, $bashScript, $utf8NoBom)
