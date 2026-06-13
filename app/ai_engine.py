@@ -286,13 +286,6 @@ def predict_sensor(sensor_data: dict) -> dict:
         }
 
 
-# Backward compatibility alias
-def predict_xgboost(sensor_data: dict) -> float:
-    """Backward compat: return danger_prob saja."""
-    result = predict_sensor(sensor_data)
-    return result["danger_prob"]
-
-
 # ==============================================================================
 # Decision Fusion & Status
 # ==============================================================================

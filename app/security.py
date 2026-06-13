@@ -3,8 +3,7 @@
 #                security headers middleware untuk Cloudflare Tunnel deployment
 # Caller       : app.auth, main.py
 # Dependensi   : bcrypt (langsung, tanpa passlib — passlib gak compatible bcrypt 4.1+)
-# Main Functions: hash_password(), verify_password(), authenticate(),
-#                SecurityHeadersMiddleware
+# Main Functions: verify_password(), authenticate(), SecurityHeadersMiddleware
 # Side Effects : Baca env vars (ADMIN_USERNAME, ADMIN_PASSWORD_HASH)
 # ==============================================================================
 
@@ -28,18 +27,6 @@ def _prep_password(password: str) -> bytes:
     """Encode + truncate password ke max 72 bytes (bcrypt requirement)."""
     pwd_bytes = password.encode("utf-8")
     return pwd_bytes[:_BCRYPT_MAX_BYTES]
-
-
-def hash_password(password: str, rounds: int = 12) -> str:
-    """
-    Hash password pakai bcrypt. Pakai untuk generate hash sekali,
-    simpan output ke env var ADMIN_PASSWORD_HASH.
-
-    rounds=12 → ~250ms per hash di CPU modern. Cukup secure, gak terlalu lambat.
-    """
-    pwd_bytes = _prep_password(password)
-    salt = bcrypt.gensalt(rounds=rounds)
-    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
@@ -111,7 +98,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
 
         # Content Security Policy — Tailwind sekarang lokal (output.css), CDN hanya untuk
-        # chart.js (jsdelivr), html2canvas+jsPDF (cdnjs), phosphor-icons (unpkg)
+        # chart.js (jsdelivr), phosphor-icons (unpkg)
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "img-src 'self' data: blob: https:; "
@@ -127,22 +114,3 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         )
 
         return response
-
-
-# ==============================================================================
-# Cloudflare-aware Client IP Helper
-# ==============================================================================
-def get_real_client_ip(request: Request) -> str:
-    """
-    Get real client IP behind Cloudflare Tunnel.
-    CF kirim header CF-Connecting-IP (lebih reliable dari X-Forwarded-For).
-    """
-    cf_ip = request.headers.get("cf-connecting-ip")
-    if cf_ip:
-        return cf_ip
-
-    xff = request.headers.get("x-forwarded-for")
-    if xff:
-        return xff.split(",")[0].strip()
-
-    return request.client.host if request.client else "unknown"

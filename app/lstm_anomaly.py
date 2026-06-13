@@ -201,9 +201,3 @@ def predict_anomaly(camera_id: str) -> dict:
             "samples_used": WINDOW_SIZE,
             "reason": f"inference error: {e}",
         }
-
-
-def get_buffer_size(camera_id: str) -> int:
-    """Helper buat debugging — cek seberapa penuh buffer-nya."""
-    with _buffer_lock:
-        return len(_buffers.get(camera_id, []))

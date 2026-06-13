@@ -40,13 +40,12 @@ chromadb
 sentence-transformers
 pypdf
 rank_bm25
-nltk
+python-docx
 
 # ============================
 # Notification & Export
 # ============================
 httpx
-fpdf
 
 # ============================
 # LSTM
@@ -63,7 +62,6 @@ langchain-text-splitters
 
 pdfplumber
 anthropic
-tiktoken
 
 google-generativeai
 

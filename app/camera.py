@@ -9,7 +9,7 @@
 import cv2
 import threading
 import time
-from typing import Optional, List, Dict
+from typing import Optional
 import numpy as np
 
 
@@ -157,22 +157,3 @@ class CameraManager:
 # Singleton global
 camera_manager = CameraManager()
 
-
-def get_camera_list() -> List[Dict]:
-    """Public — return list kamera terdaftar dengan info ringkas + status stream."""
-    try:
-        from app.config import get_cameras
-        cameras = get_cameras()
-        active_ids = set(camera_manager.get_all_camera_ids())
-        result = []
-        for cam_id, cfg in cameras.items():
-            result.append({
-                "id": cam_id,
-                "name": cfg.get("name", cam_id),
-                "enabled": cfg.get("enabled", True),
-                "stream_active": cam_id in active_ids,
-                "status": "streaming" if cam_id in active_ids else "idle",
-            })
-        return result
-    except Exception:
-        return []

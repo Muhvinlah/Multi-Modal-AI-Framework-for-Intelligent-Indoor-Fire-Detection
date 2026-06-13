@@ -1,7 +1,7 @@
 // ==============================================================================
 // Tujuan       : Dashboard frontend - WebSocket, MJPEG stream, gas class, captures
 // Perubahan    : Layout sidebar, fused probability chart, staleness counter, chat chips
-// Dependensi   : Chart.js, html2canvas, jsPDF (CDN)
+// Dependensi   : Chart.js (CDN)
 // ==============================================================================
 
 // --- 1. View Switching ---
@@ -890,15 +890,49 @@ async function saveThresholds(e) {
   } catch (err) { alert('Gagal menyimpan: ' + err); }
 }
 
-async function downloadPDF() {
-  const el = document.querySelector('.view-section.active');
-  if (!el) return;
-  const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#09090b' });
-  const pdf = new jspdf.jsPDF('landscape', 'mm', 'a4');
-  const pw = pdf.internal.pageSize.getWidth() - 20;
-  const ph = (canvas.height * pw) / canvas.width;
-  pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 10, 10, pw, ph);
-  pdf.save(`Dashboard_FireAI_${Date.now()}.pdf`);
+function downloadCSV() {
+  if (!allLogs.length) { alert('Belum ada data log untuk diunduh.'); return; }
+
+  const headers = [
+    'Timestamp', 'Camera ID', 'Camera Name', 'Status', 'Description',
+    'MQ-2 Raw', 'MQ-2 PPM', 'MQ-3 Raw', 'MQ-3 PPM',
+    'MQ-4 Raw', 'MQ-4 PPM', 'MQ-5 Raw', 'MQ-5 PPM',
+    'MQ-7 Raw', 'MQ-7 PPM', 'MQ-135 Raw', 'MQ-135 PPM',
+    'Temperature (C)', 'Humidity (%)', 'Flame Detected',
+    'Detected Class', 'Clean %', 'Smoke %', 'Gasoline %', 'Mixture %',
+    'YOLO Confidence (%)', 'Sensor Danger (%)', 'Fused Probability (%)',
+  ];
+
+  const esc = (v) => {
+    const s = String(v ?? '');
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+
+  const rows = allLogs.map(l => {
+    const cp = l.class_probs || {};
+    return [
+      l.time, l.cam_id, l.cam_name, l.status, l.message,
+      l.mq2_raw, l.mq2_ppm, l.mq3_raw, l.mq3_ppm,
+      l.mq4_raw, l.mq4_ppm, l.mq5_raw, l.mq5_ppm,
+      l.mq7_raw, l.mq7_ppm, l.mq135_raw, l.mq135_ppm,
+      l.temperature, l.humidity, l.flame_detected,
+      l.detected_class,
+      cp.Clean ?? '', cp.Smoke ?? '', cp.Gasoline ?? '', cp.Mixture ?? '',
+      l.prob_yolo, l.prob_sensor, l.prob_fused,
+    ].map(esc).join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const bom = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+  const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Log_Insiden_Kebakaran_${new Date().toISOString().slice(0,19).replace(/[:-]/g,'')}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // #1 Markdown renderer — converts bot markdown to safe HTML

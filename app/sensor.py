@@ -204,14 +204,3 @@ def _cache_snapshot(camera_id: str, data: Dict):
         return
     with _snapshot_lock:
         _latest_snapshots[camera_id] = {**data, "updated_at": time.time()}
-
-
-def get_latest_snapshot(camera_id: Optional[str]) -> Optional[Dict]:
-    """Public — query latest sensor data untuk 1 camera."""
-    with _snapshot_lock:
-        if not camera_id:
-            # Return first available camera kalau nggak spesifik
-            for cid, snap in _latest_snapshots.items():
-                return {**snap, "camera_id": cid}
-            return None
-        return _latest_snapshots.get(camera_id)

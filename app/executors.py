@@ -2,7 +2,7 @@
 # Tujuan       : Centralized executor pools untuk isolasi thread berat
 #                Mencegah YOLO/LLM memblokir thread pool web server
 # Caller       : app.websocket_handler (YOLO), app.chatbot (LLM)
-# Main Objects : yolo_pool, llm_pool
+# Main Objects : yolo_pool, sensor_pool
 # Notes        : Kedua pool ini TERPISAH dari default asyncio thread pool.
 #                asyncio.to_thread() pakai ThreadPoolExecutor bawaan Python
 #                (shared dengan seluruh app). Pool ini prevent starvation.
@@ -20,18 +20,6 @@ from concurrent.futures import ThreadPoolExecutor
 yolo_pool = ThreadPoolExecutor(
     max_workers=2,
     thread_name_prefix="yolo-worker",
-)
-
-# ─────────────────────────────────────────────────────────────────────────────
-# LLM Pool — max 1 worker thread
-#   - LLM (llama.cpp) hanya bisa generate satu respons sekaligus
-#   - max_workers=1 mencegah antrian permintaan chat memblokir YOLO pool
-#   - Permintaan chat ke-2 akan menunggu di queue internal executor ini,
-#     bukan di asyncio event loop, sehingga WebSocket tetap responsif
-# ─────────────────────────────────────────────────────────────────────────────
-llm_pool = ThreadPoolExecutor(
-    max_workers=1,
-    thread_name_prefix="llm-worker",
 )
 
 # ─────────────────────────────────────────────────────────────────────────────

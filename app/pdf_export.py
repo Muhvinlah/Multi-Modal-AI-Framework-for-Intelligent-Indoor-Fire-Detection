@@ -1,18 +1,17 @@
 # ==============================================================================
-# Tujuan       : Export riwayat sensor ke PDF
+# Tujuan       : Export riwayat sensor ke CSV
 # Caller       : main.py (router include), frontend
-# Dependensi   : fpdf, numpy
+# Dependensi   : csv (stdlib)
 # Main Functions: GET /api/download-history
-# Side Effects : Buat file PDF sementara
+# Side Effects : Buat file CSV sementara
 # ==============================================================================
 
+import csv
 import os
 import tempfile
-import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import FileResponse
-from fpdf import FPDF
 
 from app.config import get_sensor_data, get_cameras
 
@@ -21,64 +20,65 @@ router = APIRouter()
 
 @router.get("/api/download-history")
 async def download_history(background_tasks: BackgroundTasks):
-    """Generate dan download PDF laporan sensor."""
-    pdf = FPDF()
-    pdf.add_page()
+    """Generate dan download CSV laporan sensor dengan data real."""
+    now = datetime.now()
 
-    # Header
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, txt="Laporan Riwayat Sensor Kebakaran", ln=True, align="C")
-    pdf.ln(5)
+    headers = [
+        "Timestamp", "Camera ID", "Camera Name",
+        "MQ-2 Raw", "MQ-2 PPM", "MQ-3 Raw", "MQ-3 PPM",
+        "MQ-4 Raw", "MQ-4 PPM", "MQ-5 Raw", "MQ-5 PPM",
+        "MQ-7 Raw", "MQ-7 PPM", "MQ-135 Raw", "MQ-135 PPM",
+        "Temperature (C)", "Humidity (%)", "Flame Detected",
+        "Detected Class", "Sensor Danger Prob (%)",
+    ]
 
-    pdf.set_font("Arial", size=10)
-    pdf.cell(200, 6, txt=f"Digenerate: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align="C")
-    pdf.ln(8)
-
-    # Tabel Header
-    pdf.set_font("Arial", "B", 10)
-    col_widths = [25, 25, 20, 20, 20, 20, 20, 20, 20]
-    headers = ["Waktu", "Kamera", "MQ135", "MQ2", "MQ3", "MQ4", "MQ5", "MQ7", "Status"]
-    for i, h in enumerate(headers):
-        pdf.cell(col_widths[i], 8, h, border=1, align="C")
-    pdf.ln()
-
-    # Data: ambil dari sensor data yang tersimpan + simulasi historis
-    pdf.set_font("Arial", size=9)
     cameras = get_cameras()
-    sekarang = datetime.now()
+    rows = []
 
     for cam_id, cam_cfg in cameras.items():
         sensor = get_sensor_data(cam_id)
-        for i in range(5):
-            waktu = (sekarang - timedelta(minutes=5 - i)).strftime("%H:%M:%S")
-            name = cam_cfg.get("name", cam_id)[:8]
-            mq135 = str(round(sensor.get("mq135", np.random.uniform(50, 200)), 1))
-            mq2 = str(round(sensor.get("mq2", np.random.uniform(50, 300)), 1))
-            mq3 = str(round(sensor.get("mq3", np.random.uniform(10, 100)), 1))
-            mq4 = str(round(sensor.get("mq4", np.random.uniform(10, 150)), 1))
-            mq5 = str(round(sensor.get("mq5", np.random.uniform(10, 200)), 1))
-            mq7 = str(round(sensor.get("mq7", np.random.uniform(10, 100)), 1))
-            status = "Aman"
+        raw = sensor.get("raw", {}) if isinstance(sensor, dict) else {}
+        ppm = sensor.get("ppm", {}) if isinstance(sensor, dict) else {}
 
-            vals = [waktu, name, mq135, mq2, mq3, mq4, mq5, mq7, status]
-            for j, v in enumerate(vals):
-                pdf.cell(col_widths[j], 7, v, border=1, align="C")
-            pdf.ln()
+        # Fallback: top-level keys if raw/ppm nested structure not present
+        def _raw(key):
+            return raw.get(key, sensor.get(f"{key}_raw", ""))
 
-    # Footer
-    pdf.ln(10)
-    pdf.set_font("Arial", "I", 8)
-    pdf.cell(200, 5, txt="Sistem Deteksi Kebakaran - PBL Sem 6", align="C")
+        def _ppm(key):
+            v = ppm.get(key)
+            if isinstance(v, dict):
+                return v.get("ppm", "")
+            return v if v is not None else sensor.get(f"{key}_ppm", "")
 
-    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
-    pdf_path = tmp.name
+        rows.append([
+            now.strftime("%Y-%m-%d %H:%M:%S"),
+            cam_id,
+            cam_cfg.get("name", cam_id),
+            _raw("mq2"),   _ppm("mq2"),
+            _raw("mq3"),   _ppm("mq3"),
+            _raw("mq4"),   _ppm("mq4"),
+            _raw("mq5"),   _ppm("mq5"),
+            _raw("mq7"),   _ppm("mq7"),
+            _raw("mq135"), _ppm("mq135"),
+            sensor.get("temperature", ""),
+            sensor.get("humidity", ""),
+            sensor.get("flame_detected", ""),
+            sensor.get("detected_class", ""),
+            sensor.get("danger_prob", ""),
+        ])
+
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".csv", delete=False, newline="", encoding="utf-8-sig"
+    )
+    writer = csv.writer(tmp)
+    writer.writerow(headers)
+    writer.writerows(rows)
     tmp.close()
-    pdf.output(pdf_path)
 
-    background_tasks.add_task(os.unlink, pdf_path)
+    background_tasks.add_task(os.unlink, tmp.name)
 
     return FileResponse(
-        path=pdf_path,
-        media_type="application/pdf",
-        filename=f"Laporan_Sensor_{sekarang.strftime('%Y%m%d_%H%M')}.pdf",
+        path=tmp.name,
+        media_type="text/csv; charset=utf-8",
+        filename=f"Laporan_Sensor_{now.strftime('%Y%m%d_%H%M')}.csv",
     )

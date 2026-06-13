@@ -5,10 +5,9 @@
 # ==============================================================================
 import io
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Dict
 
 from docx import Document
-from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from app.ai_engine import raw_adc_to_ppm

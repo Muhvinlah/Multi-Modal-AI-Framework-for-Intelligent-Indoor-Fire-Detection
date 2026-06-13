@@ -28,17 +28,6 @@ THROTTLE_SECONDS = 50
 # --- Path Model ---
 YOLO_MODEL_PATH = "models/bestv2.pt"
 XGBOOST_MODEL_PATH = "models/fire_detection_rf.pkl"
-CHATBOT_MODEL_PATH = os.getenv("CHATBOT_MODEL_PATH", "models/qwen2.5-3b-k3-q4_k_m.gguf")
-
-CHATBOT_N_CTX = int(os.getenv("CHATBOT_N_CTX", "3072"))
-CHATBOT_N_GPU_LAYERS = int(os.getenv("CHATBOT_N_GPU_LAYERS", "-1"))   # -1 = all to GPU
-CHATBOT_N_THREADS = int(os.getenv("CHATBOT_N_THREADS", "8"))           # Match physical cores i7-12
-
-# Backup model fallback (kalau 7B gagal load karena VRAM, fallback ke 1.5B)
-CHATBOT_FALLBACK_MODEL = os.getenv(
-    "CHATBOT_FALLBACK_MODEL",
-    "models/qwen2.5-1.5b-k3.gguf",
-)
 
 # --- ChromaDB ---
 CHROMA_DB_PATH = "./chroma_db_native"

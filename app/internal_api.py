@@ -103,14 +103,3 @@ async def generate_report(
 
     except Exception as e:
         return {"ok": False, "error": f"Gagal generate laporan: {e}"}
-
-
-@router.get("/rag-retrieve", dependencies=[Depends(_verify)])
-async def rag_retrieve(query: str):
-    """Sprint 1: delegate ke app.rag_engine yang sudah ada di dashboard."""
-    try:
-        from app.rag_engine import retrieve
-        result = retrieve(query)
-        return {"context": result.get("context", ""), "sources": result.get("chunks", [])}
-    except Exception as e:
-        return {"context": "", "sources": [], "error": str(e)}
